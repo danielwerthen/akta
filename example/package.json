@@ -8,7 +8,7 @@
     "build": "parcel build index.html"
   },
   "alias": {
-    "akta": "../packages/react"
+    "akta": "../packages/akta"
   },
   "devDependencies": {
     "parcel": "^1.12.3",
