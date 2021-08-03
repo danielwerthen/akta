@@ -1,5 +1,0 @@
----
-'akta': minor
----
-
-Updating repository
