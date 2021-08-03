@@ -34,7 +34,6 @@ jobs:
       - name: Publishing canary releases to npm registry
         if: steps.changesets.outputs.published != 'true'
         run: |
-          cat .npmrc
           git checkout master
           yarn version:canary
           yarn release:canary
