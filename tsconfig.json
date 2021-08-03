@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.build.json",
+  "include": ["packages", "types", "scripts", "example"],
+  "compilerOptions": {
+    "allowJs": false,
+    "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "paths": {
+      "akta-utils": ["packages/utils/src"],
+      "akta": ["packages/akta/src"],
+      "$test/*": ["test/*"]
+    }
+  }
+}
