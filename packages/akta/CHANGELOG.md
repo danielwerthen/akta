@@ -1,5 +1,11 @@
 # akta
 
+## 0.2.0
+
+### Minor Changes
+
+- [`91d6147`](https://github.com/danielwerthen/akta/commit/91d6147abac081bcf17e03db74a02001ed626bfd) Thanks [@danielwerthen](https://github.com/danielwerthen)! - Nothing of note
+
 ## 0.1.0
 
 ### Minor Changes
