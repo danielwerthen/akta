@@ -1,3 +1,3 @@
 export function jsx() {
-  return true;
+  return 1 > 0;
 }
