@@ -1,3 +1,1 @@
-export function jsx() {
-  return 1 > 0;
-}
+export * from './jsx-runtime';

@@ -20,10 +20,13 @@
   "typings": "dist/index.d.ts",
   "files": [
     "README.md",
-    "dist"
+    "dist",
+    "jsx-runtime.d.ts",
+    "jsx-runtime.js"
   ],
   "dependencies": {
-    "akta-utils": "^0.0.1"
+    "akta-utils": "^0.0.1",
+    "csstype": "^3.0.8"
   },
   "publishConfig": {
     "access": "public"

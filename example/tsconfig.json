@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": false,
-    "target": "es5",
+    "target": "esnext",
     "module": "commonjs",
-    "jsx": "react",
-    "moduleResolution": "node",
+    "jsx": "preserve",
+    "jsxImportSource": "akta",
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
@@ -13,6 +13,9 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "lib": ["es2015", "es2016", "dom"],
-    "types": ["node"]
+    "types": ["node", "akta"],
+    "paths": {
+      "akta/jsx-runtime": ["../packages/akta/jsx-runtime"]
+    }
   }
 }
