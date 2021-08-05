@@ -21,9 +21,6 @@ module.exports = {
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
-    alias: {
-      ['akta']: path.resolve(__dirname, '../packages/akta'),
-    },
   },
   output: {
     filename: 'main.js',

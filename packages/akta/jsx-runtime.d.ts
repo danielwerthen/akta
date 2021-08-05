@@ -2,7 +2,7 @@
 
 import * as CSS from "csstype";
 import { Observable, Subject } from 'rxjs';
-import { AktaElement } from "./src/types";
+import { AktaElement, AktaAllElements } from "./src/types";
 
 export type HTMLAttributes<_T> = {
   [key: string]: unknown;
@@ -11,16 +11,6 @@ export type HTMLAttributes<_T> = {
 export type DetailedHTMLProps<E extends HTMLAttributes<T>, T> = E & {
   key?: string | null;
 };
-
-
-export type ObservableElements =
-  | Observable<AktaAllElements>
-  | Generator<AktaAllElements, AktaAllElements>
-  | AsyncGenerator<AktaAllElements, AktaAllElements>;
-
-export type AktaAllElements = AktaElement<any, any> | ObservableElements;
-
-export type AktaComponent<PROPS extends {}> = (props: PROPS) => AktaAllElements;
 
 type PropertyWrapper<ATTR extends Akta.DOMAttributes<T>, T> = {
   [key in keyof ATTR]-?: ATTR[key] extends Subject<any> | undefined
@@ -32,357 +22,358 @@ type PropertyWrapper<ATTR extends Akta.DOMAttributes<T>, T> = {
 
 type SVGPropertyWrapper<T> = PropertyWrapper<Akta.SVGAttributes<T>, T>;
 
-export interface ElementProperties {
-  // HTML
-  a: PropertyWrapper<
-    Akta.AnchorHTMLAttributes<HTMLAnchorElement>,
-    HTMLAnchorElement
-  >;
-  abbr: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  address: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  area: PropertyWrapper<
-    Akta.AreaHTMLAttributes<HTMLAreaElement>,
-    HTMLAreaElement
-  >;
-  article: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  aside: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  audio: PropertyWrapper<
-    Akta.AudioHTMLAttributes<HTMLAudioElement>,
-    HTMLAudioElement
-  >;
-  b: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  base: PropertyWrapper<
-    Akta.BaseHTMLAttributes<HTMLBaseElement>,
-    HTMLBaseElement
-  >;
-  bdi: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  bdo: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  big: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  blockquote: PropertyWrapper<
-    Akta.BlockquoteHTMLAttributes<HTMLElement>,
-    HTMLElement
-  >;
-  body: PropertyWrapper<Akta.HTMLAttributes<HTMLBodyElement>, HTMLBodyElement>;
-  br: PropertyWrapper<Akta.HTMLAttributes<HTMLBRElement>, HTMLBRElement>;
-  button: PropertyWrapper<
-    Akta.ButtonHTMLAttributes<HTMLButtonElement>,
-    HTMLButtonElement
-  >;
-  canvas: PropertyWrapper<
-    Akta.CanvasHTMLAttributes<HTMLCanvasElement>,
-    HTMLCanvasElement
-  >;
-  caption: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  cite: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  code: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  col: PropertyWrapper<
-    Akta.ColHTMLAttributes<HTMLTableColElement>,
-    HTMLTableColElement
-  >;
-  colgroup: PropertyWrapper<
-    Akta.ColgroupHTMLAttributes<HTMLTableColElement>,
-    HTMLTableColElement
-  >;
-  data: PropertyWrapper<
-    Akta.DataHTMLAttributes<HTMLDataElement>,
-    HTMLDataElement
-  >;
-  datalist: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLDataListElement>,
-    HTMLDataListElement
-  >;
-  dd: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  del: PropertyWrapper<Akta.DelHTMLAttributes<HTMLElement>, HTMLElement>;
-  details: PropertyWrapper<
-    Akta.DetailsHTMLAttributes<HTMLElement>,
-    HTMLElement
-  >;
-  dfn: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  dialog: PropertyWrapper<
-    Akta.DialogHTMLAttributes<HTMLDialogElement>,
-    HTMLDialogElement
-  >;
-  div: PropertyWrapper<Akta.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
-  dl: PropertyWrapper<Akta.HTMLAttributes<HTMLDListElement>, HTMLDListElement>;
-  dt: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  em: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  embed: PropertyWrapper<
-    Akta.EmbedHTMLAttributes<HTMLEmbedElement>,
-    HTMLEmbedElement
-  >;
-  fieldset: PropertyWrapper<
-    Akta.FieldsetHTMLAttributes<HTMLFieldSetElement>,
-    HTMLFieldSetElement
-  >;
-  figcaption: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  figure: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  footer: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  form: PropertyWrapper<
-    Akta.FormHTMLAttributes<HTMLFormElement>,
-    HTMLFormElement
-  >;
-  h1: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLHeadingElement>,
-    HTMLHeadingElement
-  >;
-  h2: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLHeadingElement>,
-    HTMLHeadingElement
-  >;
-  h3: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLHeadingElement>,
-    HTMLHeadingElement
-  >;
-  h4: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLHeadingElement>,
-    HTMLHeadingElement
-  >;
-  h5: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLHeadingElement>,
-    HTMLHeadingElement
-  >;
-  h6: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLHeadingElement>,
-    HTMLHeadingElement
-  >;
-  head: PropertyWrapper<Akta.HTMLAttributes<HTMLHeadElement>, HTMLHeadElement>;
-  header: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  hgroup: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  hr: PropertyWrapper<Akta.HTMLAttributes<HTMLHRElement>, HTMLHRElement>;
-  html: PropertyWrapper<
-    Akta.HtmlHTMLAttributes<HTMLHtmlElement>,
-    HTMLHtmlElement
-  >;
-  i: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  iframe: PropertyWrapper<
-    Akta.IframeHTMLAttributes<HTMLIFrameElement>,
-    HTMLIFrameElement
-  >;
-  img: PropertyWrapper<
-    Akta.ImgHTMLAttributes<HTMLImageElement>,
-    HTMLImageElement
-  >;
-  input: PropertyWrapper<
-    Akta.InputHTMLAttributes<HTMLInputElement>,
-    HTMLInputElement
-  >;
-  ins: PropertyWrapper<Akta.InsHTMLAttributes<HTMLModElement>, HTMLModElement>;
-  kbd: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  keygen: PropertyWrapper<Akta.KeygenHTMLAttributes<HTMLElement>, HTMLElement>;
-  label: PropertyWrapper<
-    Akta.LabelHTMLAttributes<HTMLLabelElement>,
-    HTMLLabelElement
-  >;
-  legend: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLLegendElement>,
-    HTMLLegendElement
-  >;
-  li: PropertyWrapper<Akta.LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>;
-  link: PropertyWrapper<
-    Akta.LinkHTMLAttributes<HTMLLinkElement>,
-    HTMLLinkElement
-  >;
-  main: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  map: PropertyWrapper<Akta.MapHTMLAttributes<HTMLMapElement>, HTMLMapElement>;
-  mark: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  menu: PropertyWrapper<Akta.MenuHTMLAttributes<HTMLElement>, HTMLElement>;
-  menuitem: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  meta: PropertyWrapper<
-    Akta.MetaHTMLAttributes<HTMLMetaElement>,
-    HTMLMetaElement
-  >;
-  meter: PropertyWrapper<Akta.MeterHTMLAttributes<HTMLElement>, HTMLElement>;
-  nav: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  noindex: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  noscript: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  object: PropertyWrapper<
-    Akta.ObjectHTMLAttributes<HTMLObjectElement>,
-    HTMLObjectElement
-  >;
-  ol: PropertyWrapper<
-    Akta.OlHTMLAttributes<HTMLOListElement>,
-    HTMLOListElement
-  >;
-  optgroup: PropertyWrapper<
-    Akta.OptgroupHTMLAttributes<HTMLOptGroupElement>,
-    HTMLOptGroupElement
-  >;
-  option: PropertyWrapper<
-    Akta.OptionHTMLAttributes<HTMLOptionElement>,
-    HTMLOptionElement
-  >;
-  output: PropertyWrapper<Akta.OutputHTMLAttributes<HTMLElement>, HTMLElement>;
-  p: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLParagraphElement>,
-    HTMLParagraphElement
-  >;
-  param: PropertyWrapper<
-    Akta.ParamHTMLAttributes<HTMLParamElement>,
-    HTMLParamElement
-  >;
-  picture: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  pre: PropertyWrapper<Akta.HTMLAttributes<HTMLPreElement>, HTMLPreElement>;
-  progress: PropertyWrapper<
-    Akta.ProgressHTMLAttributes<HTMLProgressElement>,
-    HTMLProgressElement
-  >;
-  q: PropertyWrapper<
-    Akta.QuoteHTMLAttributes<HTMLQuoteElement>,
-    HTMLQuoteElement
-  >;
-  rp: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  rt: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  ruby: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  s: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  samp: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  slot: PropertyWrapper<
-    Akta.SlotHTMLAttributes<HTMLSlotElement>,
-    HTMLSlotElement
-  >;
-  script: PropertyWrapper<
-    Akta.ScriptHTMLAttributes<HTMLScriptElement>,
-    HTMLScriptElement
-  >;
-  section: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  select: PropertyWrapper<
-    Akta.SelectHTMLAttributes<HTMLSelectElement>,
-    HTMLSelectElement
-  >;
-  small: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  source: PropertyWrapper<
-    Akta.SourceHTMLAttributes<HTMLSourceElement>,
-    HTMLSourceElement
-  >;
-  span: PropertyWrapper<Akta.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>;
-  strong: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  style: PropertyWrapper<
-    Akta.StyleHTMLAttributes<HTMLStyleElement>,
-    HTMLStyleElement
-  >;
-  sub: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  summary: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  sup: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  table: PropertyWrapper<
-    Akta.TableHTMLAttributes<HTMLTableElement>,
-    HTMLTableElement
-  >;
-  template: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLTemplateElement>,
-    HTMLTemplateElement
-  >;
-  tbody: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLTableSectionElement>,
-    HTMLTableSectionElement
-  >;
-  td: PropertyWrapper<
-    Akta.TdHTMLAttributes<HTMLTableDataCellElement>,
-    HTMLTableDataCellElement
-  >;
-  textarea: PropertyWrapper<
-    Akta.TextareaHTMLAttributes<HTMLTextAreaElement>,
-    HTMLTextAreaElement
-  >;
-  tfoot: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLTableSectionElement>,
-    HTMLTableSectionElement
-  >;
-  th: PropertyWrapper<
-    Akta.ThHTMLAttributes<HTMLTableHeaderCellElement>,
-    HTMLTableHeaderCellElement
-  >;
-  thead: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLTableSectionElement>,
-    HTMLTableSectionElement
-  >;
-  time: PropertyWrapper<Akta.TimeHTMLAttributes<HTMLElement>, HTMLElement>;
-  title: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLTitleElement>,
-    HTMLTitleElement
-  >;
-  tr: PropertyWrapper<
-    Akta.HTMLAttributes<HTMLTableRowElement>,
-    HTMLTableRowElement
-  >;
-  track: PropertyWrapper<
-    Akta.TrackHTMLAttributes<HTMLTrackElement>,
-    HTMLTrackElement
-  >;
-  u: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  ul: PropertyWrapper<Akta.HTMLAttributes<HTMLUListElement>, HTMLUListElement>;
-  var: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  video: PropertyWrapper<
-    Akta.VideoHTMLAttributes<HTMLVideoElement>,
-    HTMLVideoElement
-  >;
-  wbr: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
-  /*
-webview: EventCreation<
-  Akta.WebViewHTMLAttributes<HTMLWebViewElement>,
-  HTMLWebViewElement
->;*/
+declare module "./dist/types" {
+  interface ElementProperties {
+    // HTML
+    a: PropertyWrapper<
+      Akta.AnchorHTMLAttributes<HTMLAnchorElement>,
+      HTMLAnchorElement
+    >;
+    abbr: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    address: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    area: PropertyWrapper<
+      Akta.AreaHTMLAttributes<HTMLAreaElement>,
+      HTMLAreaElement
+    >;
+    article: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    aside: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    audio: PropertyWrapper<
+      Akta.AudioHTMLAttributes<HTMLAudioElement>,
+      HTMLAudioElement
+    >;
+    b: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    base: PropertyWrapper<
+      Akta.BaseHTMLAttributes<HTMLBaseElement>,
+      HTMLBaseElement
+    >;
+    bdi: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    bdo: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    big: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    blockquote: PropertyWrapper<
+      Akta.BlockquoteHTMLAttributes<HTMLElement>,
+      HTMLElement
+    >;
+    body: PropertyWrapper<Akta.HTMLAttributes<HTMLBodyElement>, HTMLBodyElement>;
+    br: PropertyWrapper<Akta.HTMLAttributes<HTMLBRElement>, HTMLBRElement>;
+    button: PropertyWrapper<
+      Akta.ButtonHTMLAttributes<HTMLButtonElement>,
+      HTMLButtonElement
+    >;
+    canvas: PropertyWrapper<
+      Akta.CanvasHTMLAttributes<HTMLCanvasElement>,
+      HTMLCanvasElement
+    >;
+    caption: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    cite: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    code: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    col: PropertyWrapper<
+      Akta.ColHTMLAttributes<HTMLTableColElement>,
+      HTMLTableColElement
+    >;
+    colgroup: PropertyWrapper<
+      Akta.ColgroupHTMLAttributes<HTMLTableColElement>,
+      HTMLTableColElement
+    >;
+    data: PropertyWrapper<
+      Akta.DataHTMLAttributes<HTMLDataElement>,
+      HTMLDataElement
+    >;
+    datalist: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLDataListElement>,
+      HTMLDataListElement
+    >;
+    dd: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    del: PropertyWrapper<Akta.DelHTMLAttributes<HTMLElement>, HTMLElement>;
+    details: PropertyWrapper<
+      Akta.DetailsHTMLAttributes<HTMLElement>,
+      HTMLElement
+    >;
+    dfn: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    dialog: PropertyWrapper<
+      Akta.DialogHTMLAttributes<HTMLDialogElement>,
+      HTMLDialogElement
+    >;
+    div: PropertyWrapper<Akta.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
+    dl: PropertyWrapper<Akta.HTMLAttributes<HTMLDListElement>, HTMLDListElement>;
+    dt: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    em: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    embed: PropertyWrapper<
+      Akta.EmbedHTMLAttributes<HTMLEmbedElement>,
+      HTMLEmbedElement
+    >;
+    fieldset: PropertyWrapper<
+      Akta.FieldsetHTMLAttributes<HTMLFieldSetElement>,
+      HTMLFieldSetElement
+    >;
+    figcaption: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    figure: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    footer: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    form: PropertyWrapper<
+      Akta.FormHTMLAttributes<HTMLFormElement>,
+      HTMLFormElement
+    >;
+    h1: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLHeadingElement>,
+      HTMLHeadingElement
+    >;
+    h2: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLHeadingElement>,
+      HTMLHeadingElement
+    >;
+    h3: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLHeadingElement>,
+      HTMLHeadingElement
+    >;
+    h4: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLHeadingElement>,
+      HTMLHeadingElement
+    >;
+    h5: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLHeadingElement>,
+      HTMLHeadingElement
+    >;
+    h6: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLHeadingElement>,
+      HTMLHeadingElement
+    >;
+    head: PropertyWrapper<Akta.HTMLAttributes<HTMLHeadElement>, HTMLHeadElement>;
+    header: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    hgroup: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    hr: PropertyWrapper<Akta.HTMLAttributes<HTMLHRElement>, HTMLHRElement>;
+    html: PropertyWrapper<
+      Akta.HtmlHTMLAttributes<HTMLHtmlElement>,
+      HTMLHtmlElement
+    >;
+    i: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    iframe: PropertyWrapper<
+      Akta.IframeHTMLAttributes<HTMLIFrameElement>,
+      HTMLIFrameElement
+    >;
+    img: PropertyWrapper<
+      Akta.ImgHTMLAttributes<HTMLImageElement>,
+      HTMLImageElement
+    >;
+    input: PropertyWrapper<
+      Akta.InputHTMLAttributes<HTMLInputElement>,
+      HTMLInputElement
+    >;
+    ins: PropertyWrapper<Akta.InsHTMLAttributes<HTMLModElement>, HTMLModElement>;
+    kbd: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    keygen: PropertyWrapper<Akta.KeygenHTMLAttributes<HTMLElement>, HTMLElement>;
+    label: PropertyWrapper<
+      Akta.LabelHTMLAttributes<HTMLLabelElement>,
+      HTMLLabelElement
+    >;
+    legend: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLLegendElement>,
+      HTMLLegendElement
+    >;
+    li: PropertyWrapper<Akta.LiHTMLAttributes<HTMLLIElement>, HTMLLIElement>;
+    link: PropertyWrapper<
+      Akta.LinkHTMLAttributes<HTMLLinkElement>,
+      HTMLLinkElement
+    >;
+    main: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    map: PropertyWrapper<Akta.MapHTMLAttributes<HTMLMapElement>, HTMLMapElement>;
+    mark: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    menu: PropertyWrapper<Akta.MenuHTMLAttributes<HTMLElement>, HTMLElement>;
+    menuitem: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    meta: PropertyWrapper<
+      Akta.MetaHTMLAttributes<HTMLMetaElement>,
+      HTMLMetaElement
+    >;
+    meter: PropertyWrapper<Akta.MeterHTMLAttributes<HTMLElement>, HTMLElement>;
+    nav: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    noindex: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    noscript: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    object: PropertyWrapper<
+      Akta.ObjectHTMLAttributes<HTMLObjectElement>,
+      HTMLObjectElement
+    >;
+    ol: PropertyWrapper<
+      Akta.OlHTMLAttributes<HTMLOListElement>,
+      HTMLOListElement
+    >;
+    optgroup: PropertyWrapper<
+      Akta.OptgroupHTMLAttributes<HTMLOptGroupElement>,
+      HTMLOptGroupElement
+    >;
+    option: PropertyWrapper<
+      Akta.OptionHTMLAttributes<HTMLOptionElement>,
+      HTMLOptionElement
+    >;
+    output: PropertyWrapper<Akta.OutputHTMLAttributes<HTMLElement>, HTMLElement>;
+    p: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLParagraphElement>,
+      HTMLParagraphElement
+    >;
+    param: PropertyWrapper<
+      Akta.ParamHTMLAttributes<HTMLParamElement>,
+      HTMLParamElement
+    >;
+    picture: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    pre: PropertyWrapper<Akta.HTMLAttributes<HTMLPreElement>, HTMLPreElement>;
+    progress: PropertyWrapper<
+      Akta.ProgressHTMLAttributes<HTMLProgressElement>,
+      HTMLProgressElement
+    >;
+    q: PropertyWrapper<
+      Akta.QuoteHTMLAttributes<HTMLQuoteElement>,
+      HTMLQuoteElement
+    >;
+    rp: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    rt: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    ruby: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    s: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    samp: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    slot: PropertyWrapper<
+      Akta.SlotHTMLAttributes<HTMLSlotElement>,
+      HTMLSlotElement
+    >;
+    script: PropertyWrapper<
+      Akta.ScriptHTMLAttributes<HTMLScriptElement>,
+      HTMLScriptElement
+    >;
+    section: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    select: PropertyWrapper<
+      Akta.SelectHTMLAttributes<HTMLSelectElement>,
+      HTMLSelectElement
+    >;
+    small: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    source: PropertyWrapper<
+      Akta.SourceHTMLAttributes<HTMLSourceElement>,
+      HTMLSourceElement
+    >;
+    span: PropertyWrapper<Akta.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>;
+    strong: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    style: PropertyWrapper<
+      Akta.StyleHTMLAttributes<HTMLStyleElement>,
+      HTMLStyleElement
+    >;
+    sub: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    summary: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    sup: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    table: PropertyWrapper<
+      Akta.TableHTMLAttributes<HTMLTableElement>,
+      HTMLTableElement
+    >;
+    template: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLTemplateElement>,
+      HTMLTemplateElement
+    >;
+    tbody: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLTableSectionElement>,
+      HTMLTableSectionElement
+    >;
+    td: PropertyWrapper<
+      Akta.TdHTMLAttributes<HTMLTableDataCellElement>,
+      HTMLTableDataCellElement
+    >;
+    textarea: PropertyWrapper<
+      Akta.TextareaHTMLAttributes<HTMLTextAreaElement>,
+      HTMLTextAreaElement
+    >;
+    tfoot: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLTableSectionElement>,
+      HTMLTableSectionElement
+    >;
+    th: PropertyWrapper<
+      Akta.ThHTMLAttributes<HTMLTableHeaderCellElement>,
+      HTMLTableHeaderCellElement
+    >;
+    thead: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLTableSectionElement>,
+      HTMLTableSectionElement
+    >;
+    time: PropertyWrapper<Akta.TimeHTMLAttributes<HTMLElement>, HTMLElement>;
+    title: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLTitleElement>,
+      HTMLTitleElement
+    >;
+    tr: PropertyWrapper<
+      Akta.HTMLAttributes<HTMLTableRowElement>,
+      HTMLTableRowElement
+    >;
+    track: PropertyWrapper<
+      Akta.TrackHTMLAttributes<HTMLTrackElement>,
+      HTMLTrackElement
+    >;
+    u: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    ul: PropertyWrapper<Akta.HTMLAttributes<HTMLUListElement>, HTMLUListElement>;
+    var: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    video: PropertyWrapper<
+      Akta.VideoHTMLAttributes<HTMLVideoElement>,
+      HTMLVideoElement
+    >;
+    wbr: PropertyWrapper<Akta.HTMLAttributes<HTMLElement>, HTMLElement>;
+    /*
+  webview: EventCreation<
+    Akta.WebViewHTMLAttributes<HTMLWebViewElement>,
+    HTMLWebViewElement
+  >;*/
 
-  // SVG
-  svg: SVGPropertyWrapper<SVGSVGElement>;
+    // SVG
+    svg: SVGPropertyWrapper<SVGSVGElement>;
 
-  animate: SVGPropertyWrapper<SVGElement>; // TODO: It is SVGAnimateElement but is not in TypeScript's lib.dom.d.ts for now.
-  animateMotion: SVGPropertyWrapper<SVGElement>;
-  animateTransform: SVGPropertyWrapper<SVGElement>; // TODO: It is SVGAnimateTransformElement but is not in TypeScript's lib.dom.d.ts for now.
-  circle: SVGPropertyWrapper<SVGCircleElement>;
-  clipPath: SVGPropertyWrapper<SVGClipPathElement>;
-  defs: SVGPropertyWrapper<SVGDefsElement>;
-  desc: SVGPropertyWrapper<SVGDescElement>;
-  ellipse: SVGPropertyWrapper<SVGEllipseElement>;
-  feBlend: SVGPropertyWrapper<SVGFEBlendElement>;
-  feColorMatrix: SVGPropertyWrapper<SVGFEColorMatrixElement>;
-  feComponentTransfer: SVGPropertyWrapper<SVGFEComponentTransferElement>;
-  feComposite: SVGPropertyWrapper<SVGFECompositeElement>;
-  feConvolveMatrix: SVGPropertyWrapper<SVGFEConvolveMatrixElement>;
-  feDiffuseLighting: SVGPropertyWrapper<SVGFEDiffuseLightingElement>;
-  feDisplacementMap: SVGPropertyWrapper<SVGFEDisplacementMapElement>;
-  feDistantLight: SVGPropertyWrapper<SVGFEDistantLightElement>;
-  feDropShadow: SVGPropertyWrapper<SVGFEDropShadowElement>;
-  feFlood: SVGPropertyWrapper<SVGFEFloodElement>;
-  feFuncA: SVGPropertyWrapper<SVGFEFuncAElement>;
-  feFuncB: SVGPropertyWrapper<SVGFEFuncBElement>;
-  feFuncG: SVGPropertyWrapper<SVGFEFuncGElement>;
-  feFuncR: SVGPropertyWrapper<SVGFEFuncRElement>;
-  feGaussianBlur: SVGPropertyWrapper<SVGFEGaussianBlurElement>;
-  feImage: SVGPropertyWrapper<SVGFEImageElement>;
-  feMerge: SVGPropertyWrapper<SVGFEMergeElement>;
-  feMergeNode: SVGPropertyWrapper<SVGFEMergeNodeElement>;
-  feMorphology: SVGPropertyWrapper<SVGFEMorphologyElement>;
-  feOffset: SVGPropertyWrapper<SVGFEOffsetElement>;
-  fePointLight: SVGPropertyWrapper<SVGFEPointLightElement>;
-  feSpecularLighting: SVGPropertyWrapper<SVGFESpecularLightingElement>;
-  feSpotLight: SVGPropertyWrapper<SVGFESpotLightElement>;
-  feTile: SVGPropertyWrapper<SVGFETileElement>;
-  feTurbulence: SVGPropertyWrapper<SVGFETurbulenceElement>;
-  filter: SVGPropertyWrapper<SVGFilterElement>;
-  foreignObject: SVGPropertyWrapper<SVGForeignObjectElement>;
-  g: SVGPropertyWrapper<SVGGElement>;
-  image: SVGPropertyWrapper<SVGImageElement>;
-  line: SVGPropertyWrapper<SVGLineElement>;
-  linearGradient: SVGPropertyWrapper<SVGLinearGradientElement>;
-  marker: SVGPropertyWrapper<SVGMarkerElement>;
-  mask: SVGPropertyWrapper<SVGMaskElement>;
-  metadata: SVGPropertyWrapper<SVGMetadataElement>;
-  mpath: SVGPropertyWrapper<SVGElement>;
-  path: SVGPropertyWrapper<SVGPathElement>;
-  pattern: SVGPropertyWrapper<SVGPatternElement>;
-  polygon: SVGPropertyWrapper<SVGPolygonElement>;
-  polyline: SVGPropertyWrapper<SVGPolylineElement>;
-  radialGradient: SVGPropertyWrapper<SVGRadialGradientElement>;
-  rect: SVGPropertyWrapper<SVGRectElement>;
-  stop: SVGPropertyWrapper<SVGStopElement>;
-  switch: SVGPropertyWrapper<SVGSwitchElement>;
-  symbol: SVGPropertyWrapper<SVGSymbolElement>;
-  text: SVGPropertyWrapper<SVGTextElement>;
-  textPath: SVGPropertyWrapper<SVGTextPathElement>;
-  tspan: SVGPropertyWrapper<SVGTSpanElement>;
-  use: SVGPropertyWrapper<SVGUseElement>;
-  view: SVGPropertyWrapper<SVGViewElement>;
+    animate: SVGPropertyWrapper<SVGElement>; // TODO: It is SVGAnimateElement but is not in TypeScript's lib.dom.d.ts for now.
+    animateMotion: SVGPropertyWrapper<SVGElement>;
+    animateTransform: SVGPropertyWrapper<SVGElement>; // TODO: It is SVGAnimateTransformElement but is not in TypeScript's lib.dom.d.ts for now.
+    circle: SVGPropertyWrapper<SVGCircleElement>;
+    clipPath: SVGPropertyWrapper<SVGClipPathElement>;
+    defs: SVGPropertyWrapper<SVGDefsElement>;
+    desc: SVGPropertyWrapper<SVGDescElement>;
+    ellipse: SVGPropertyWrapper<SVGEllipseElement>;
+    feBlend: SVGPropertyWrapper<SVGFEBlendElement>;
+    feColorMatrix: SVGPropertyWrapper<SVGFEColorMatrixElement>;
+    feComponentTransfer: SVGPropertyWrapper<SVGFEComponentTransferElement>;
+    feComposite: SVGPropertyWrapper<SVGFECompositeElement>;
+    feConvolveMatrix: SVGPropertyWrapper<SVGFEConvolveMatrixElement>;
+    feDiffuseLighting: SVGPropertyWrapper<SVGFEDiffuseLightingElement>;
+    feDisplacementMap: SVGPropertyWrapper<SVGFEDisplacementMapElement>;
+    feDistantLight: SVGPropertyWrapper<SVGFEDistantLightElement>;
+    feDropShadow: SVGPropertyWrapper<SVGFEDropShadowElement>;
+    feFlood: SVGPropertyWrapper<SVGFEFloodElement>;
+    feFuncA: SVGPropertyWrapper<SVGFEFuncAElement>;
+    feFuncB: SVGPropertyWrapper<SVGFEFuncBElement>;
+    feFuncG: SVGPropertyWrapper<SVGFEFuncGElement>;
+    feFuncR: SVGPropertyWrapper<SVGFEFuncRElement>;
+    feGaussianBlur: SVGPropertyWrapper<SVGFEGaussianBlurElement>;
+    feImage: SVGPropertyWrapper<SVGFEImageElement>;
+    feMerge: SVGPropertyWrapper<SVGFEMergeElement>;
+    feMergeNode: SVGPropertyWrapper<SVGFEMergeNodeElement>;
+    feMorphology: SVGPropertyWrapper<SVGFEMorphologyElement>;
+    feOffset: SVGPropertyWrapper<SVGFEOffsetElement>;
+    fePointLight: SVGPropertyWrapper<SVGFEPointLightElement>;
+    feSpecularLighting: SVGPropertyWrapper<SVGFESpecularLightingElement>;
+    feSpotLight: SVGPropertyWrapper<SVGFESpotLightElement>;
+    feTile: SVGPropertyWrapper<SVGFETileElement>;
+    feTurbulence: SVGPropertyWrapper<SVGFETurbulenceElement>;
+    filter: SVGPropertyWrapper<SVGFilterElement>;
+    foreignObject: SVGPropertyWrapper<SVGForeignObjectElement>;
+    g: SVGPropertyWrapper<SVGGElement>;
+    image: SVGPropertyWrapper<SVGImageElement>;
+    line: SVGPropertyWrapper<SVGLineElement>;
+    linearGradient: SVGPropertyWrapper<SVGLinearGradientElement>;
+    marker: SVGPropertyWrapper<SVGMarkerElement>;
+    mask: SVGPropertyWrapper<SVGMaskElement>;
+    metadata: SVGPropertyWrapper<SVGMetadataElement>;
+    mpath: SVGPropertyWrapper<SVGElement>;
+    path: SVGPropertyWrapper<SVGPathElement>;
+    pattern: SVGPropertyWrapper<SVGPatternElement>;
+    polygon: SVGPropertyWrapper<SVGPolygonElement>;
+    polyline: SVGPropertyWrapper<SVGPolylineElement>;
+    radialGradient: SVGPropertyWrapper<SVGRadialGradientElement>;
+    rect: SVGPropertyWrapper<SVGRectElement>;
+    stop: SVGPropertyWrapper<SVGStopElement>;
+    switch: SVGPropertyWrapper<SVGSwitchElement>;
+    symbol: SVGPropertyWrapper<SVGSymbolElement>;
+    text: SVGPropertyWrapper<SVGTextElement>;
+    textPath: SVGPropertyWrapper<SVGTextPathElement>;
+    tspan: SVGPropertyWrapper<SVGTSpanElement>;
+    use: SVGPropertyWrapper<SVGUseElement>;
+    view: SVGPropertyWrapper<SVGViewElement>;
+  }
 }
-
 type NativeAnimationEvent = AnimationEvent;
 type NativeClipboardEvent = ClipboardEvent;
 type NativeCompositionEvent = CompositionEvent;

@@ -1,4 +1,12 @@
-import { jsx } from 'akta';
+import { mount, AktaIntrinsicElements } from 'akta';
 
-const test = <p>Daniel</p>;
-console.log(test);
+function App() {
+  return <p>Daniel</p>;
+}
+const el = document.createElement('div');
+document.body.appendChild(el);
+
+mount(<App />, {
+  parent: el,
+  intrinsic: new AktaIntrinsicElements(),
+});

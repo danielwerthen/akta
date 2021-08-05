@@ -18,6 +18,16 @@
   "main": "dist/index.js",
   "module": "dist/akta.esm.js",
   "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/akta.esm.js",
+      "require": "./dist/index.js"
+    },
+    "./jsx-runtime": {
+      "import": "./jsx-runtime.esm.js",
+      "require": "./jsx-runtime.cjs.js"
+    }
+  },
   "files": [
     "README.md",
     "dist",
@@ -26,7 +36,8 @@
   ],
   "dependencies": {
     "akta-utils": "^0.0.1",
-    "csstype": "^3.0.8"
+    "csstype": "^3.0.8",
+    "rxjs": "^7.3.0"
   },
   "publishConfig": {
     "access": "public"

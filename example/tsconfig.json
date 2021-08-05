@@ -4,7 +4,6 @@
     "target": "esnext",
     "module": "commonjs",
     "jsx": "preserve",
-    "jsxImportSource": "akta",
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
@@ -13,9 +12,6 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "lib": ["es2015", "es2016", "dom"],
-    "types": ["node", "akta"],
-    "paths": {
-      "akta/jsx-runtime": ["../packages/akta/jsx-runtime"]
-    }
+    "types": ["node"]
   }
 }
