@@ -1,14 +1,14 @@
-import { createSyncContext } from "./sync-context";
+import { createSyncContext } from './sync-context';
 
-describe("Sync context", () => {
-  it("should provide the provided context syncronously", () => {
+describe('Sync context', () => {
+  it('should provide the provided context syncronously', () => {
     const provider = createSyncContext<number>();
     const result = provider.setContext(() => {
       return provider.getContext();
     }, 5);
     expect(result).toBe(5);
   });
-  it("should provide the provided context syncronously and nested", () => {
+  it('should provide the provided context syncronously and nested', () => {
     const provider = createSyncContext<number>();
     const result = provider.setContext(() => {
       {

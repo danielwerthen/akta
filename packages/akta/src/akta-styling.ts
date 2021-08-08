@@ -1,15 +1,15 @@
-import { isObservable, Observable } from "rxjs";
-import MetaObject, { MethodMissing } from "./meta-object";
+import { isObservable, Observable } from 'rxjs';
+import MetaObject, { MethodMissing } from './meta-object';
 
 let styleSheet: HTMLStyleElement;
 let ruleCount = 0;
 
 export class StyleSheets extends MetaObject<HTMLStyleElement> {
   [MethodMissing](key: string) {
-    if (typeof key !== "string") {
+    if (typeof key !== 'string') {
       return;
     }
-    styleSheet = document.createElement("style");
+    styleSheet = document.createElement('style');
     styleSheet.media = key;
     document.head.appendChild(styleSheet);
     return styleSheet;
@@ -25,29 +25,31 @@ type ParsedAttribute = {
 };
 
 export const stylePrefixes: {
-  [key: string]: Omit<ParsedAttribute, "attributeName">;
+  [key: string]: Omit<ParsedAttribute, 'attributeName'>;
 } = {
   small: {
-    media: "(max-width: 768px)",
+    media: '(max-width: 768px)',
   },
   medium: {
-    media: "(max-width: 1200px) and (min-width: 769px)",
+    media: '(max-width: 1200px) and (min-width: 769px)',
   },
   large: {
-    media: "(min-width: 1201px)",
+    media: '(min-width: 1201px)',
   },
   hover: {
-    pseudo: ":hover",
+    pseudo: ':hover',
   },
 };
 
-function parse(camelCaseAttribute: string): {
+function parse(
+  camelCaseAttribute: string
+): {
   attributeName: string;
   media?: string;
   pseudo?: string;
 } {
-  const attribute = camelCaseAttribute.replace(/[A-Z]/g, "-$&").toLowerCase();
-  const keywords = attribute.split("-");
+  const attribute = camelCaseAttribute.replace(/[A-Z]/g, '-$&').toLowerCase();
+  const keywords = attribute.split('-');
   if (keywords.length < 2) {
     return {
       attributeName: attribute,
@@ -62,7 +64,7 @@ function parse(camelCaseAttribute: string): {
       const mods = stylePrefixes[keyword];
       if (mods?.media) {
         output.media = output.media
-          ? output.media + " and " + mods.media
+          ? output.media + ' and ' + mods.media
           : mods.media;
       }
       if (mods?.pseudo) {
@@ -72,20 +74,20 @@ function parse(camelCaseAttribute: string): {
       }
       if (!mods) {
         output.attributeName = output.attributeName
-          ? output.attributeName + "-" + keyword
+          ? output.attributeName + '-' + keyword
           : keyword;
       }
       return output;
     },
     {
-      attributeName: "",
+      attributeName: '',
     }
   );
 }
 
 export function standardCSSMethod<T extends HTMLElement>(key: string) {
   const { attributeName, media, pseudo } = parse(key);
-  styleSheet = styleSheets[media ?? "all"];
+  styleSheet = styleSheets[media ?? 'all'];
   const cache: { [key: string]: string } = {};
   function getClassName(value: string) {
     if (cache[value]) {
@@ -93,15 +95,15 @@ export function standardCSSMethod<T extends HTMLElement>(key: string) {
     }
     const className = `c${ruleCount++}`;
     styleSheet.sheet?.insertRule(
-      `.${className}${pseudo ?? ""}{ ${attributeName}:${value}; }`,
+      `.${className}${pseudo ?? ''}{ ${attributeName}:${value}; }`,
       styleSheet.sheet?.cssRules.length
     );
     return (cache[value] = className);
   }
-  return function (element: T, value: Observable<string> | string) {
+  return function(element: T, value: Observable<string> | string) {
     if (isObservable(value)) {
       let prevClassName: string;
-      const sub = value.subscribe((val) => {
+      const sub = value.subscribe(val => {
         const className = getClassName(val);
         if (prevClassName) {
           element.classList.remove(prevClassName);

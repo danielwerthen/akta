@@ -1,4 +1,4 @@
-export const MethodMissing = Symbol("methodMissing");
+export const MethodMissing = Symbol('methodMissing');
 
 interface MetaObjectInterface<V> {
   [key: string]: V;
@@ -8,7 +8,7 @@ interface MetaObjectInterface<V> {
 class MetaObject<T> implements MetaObjectInterface<T> {
   [key: string]: T;
   [MethodMissing](_property: string | symbol): T | undefined {
-    throw new Error("MethodMissing is not defined");
+    throw new Error('MethodMissing is not defined');
   }
 }
 

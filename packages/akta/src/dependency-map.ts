@@ -1,5 +1,5 @@
-import { BehaviorSubject, Observable, of } from "rxjs";
-import { switchMap } from "rxjs/operators";
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 export type Dependency<T> = {
   key: symbol;
@@ -14,7 +14,7 @@ export type DependencyMap = {
   branch(): DependencyMap;
 };
 
-const LocalStop = Symbol("Dependency stopper");
+const LocalStop = Symbol('Dependency stopper');
 
 export function createDependencyMap(parent?: DependencyMap): DependencyMap {
   const store: Map<Symbol, BehaviorSubject<unknown>> = new Map();
@@ -28,7 +28,7 @@ export function createDependencyMap(parent?: DependencyMap): DependencyMap {
   function dependencyMap<T>(dep: Dependency<T>): Observable<T> {
     const subject = getLocal(dep);
     return subject.pipe(
-      switchMap((val) => {
+      switchMap(val => {
         if ((val as unknown) === LocalStop) {
           return parent ? parent(dep) : of(dep.value);
         }
@@ -42,7 +42,7 @@ export function createDependencyMap(parent?: DependencyMap): DependencyMap {
     const subject = getLocal(dep);
     subject.next(value);
   };
-  map.use = (dep) => {
+  map.use = dep => {
     return parent ? parent(dep) : of(dep.value);
   };
   map.get = <T>(dep: Dependency<T>) => {
@@ -53,7 +53,7 @@ export function createDependencyMap(parent?: DependencyMap): DependencyMap {
 
 export function createDependency<T>(initialValue: T): Dependency<T> {
   return {
-    key: Symbol("Dependency"),
+    key: Symbol('Dependency'),
     value: initialValue,
   };
 }
