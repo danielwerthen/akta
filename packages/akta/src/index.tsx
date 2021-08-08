@@ -1,11 +1,6 @@
-import {
-  Props,
-  useTeardown,
-  useNext,
-  AktaIntrinsicElements,
-} from './akta-integrators';
-import { mount } from './akta-dom';
+import { Props, useTeardown, useNext } from './akta-integrators';
 
 export * from './jsx-runtime';
+export { mount } from './dom-ops';
 
-export { Props, useNext, useTeardown, mount, AktaIntrinsicElements };
+export { Props, useNext, useTeardown };

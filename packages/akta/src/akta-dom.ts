@@ -78,7 +78,9 @@ function elementizeAktaElement(
     const cleanups: Cleanup[] = [];
     for (const key in node.props) {
       if (key === 'children') {
-        const children: AktaAllElements | AktaAllElements[] = node.props[key];
+        const children: AktaAllElements | AktaAllElements[] = node.props[
+          key
+        ] as AktaAllElements | AktaAllElements[];
         const cleanup = joinChildElements(children, element, ctx);
         if (cleanup) {
           cleanups.push(cleanup);

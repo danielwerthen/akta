@@ -1,11 +1,10 @@
 import { Observable } from 'rxjs';
 
 export type AktaElement<
-  P = any,
-  T extends string | ((props: P) => AktaElement<P, any>) = string
+  P extends { [key: string]: unknown } = { [key: string]: unknown }
 > = {
   $$type: Symbol;
-  type: T;
+  type: string | AktaComponent<P>;
   props: P;
   key: string | undefined;
 };
@@ -15,7 +14,7 @@ export type ObservableElements =
   | Generator<AktaAllElements, AktaAllElements>
   | AsyncGenerator<AktaAllElements, AktaAllElements>;
 
-export type AktaAllElements = AktaElement<any, any> | ObservableElements;
+export type AktaAllElements = AktaElement | ObservableElements;
 
 export const AktaElementType = Symbol('Akta element');
 
