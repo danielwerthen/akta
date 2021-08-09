@@ -1,4 +1,6 @@
 import { isObservable, Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { AttributeMethod } from './element-ops';
 import MetaObject, { MethodMissing } from './meta-object';
 
 let styleSheet: HTMLStyleElement;
@@ -85,7 +87,9 @@ function parse(
   );
 }
 
-export function standardCSSMethod<T extends HTMLElement>(key: string) {
+export function standardCSSMethod<T extends HTMLElement>(
+  key: string
+): AttributeMethod<T> {
   const { attributeName, media, pseudo } = parse(key);
   styleSheet = styleSheets[media ?? 'all'];
   const cache: { [key: string]: string } = {};
@@ -103,15 +107,16 @@ export function standardCSSMethod<T extends HTMLElement>(key: string) {
   return function(element: T, value: Observable<string> | string) {
     if (isObservable(value)) {
       let prevClassName: string;
-      const sub = value.subscribe(val => {
-        const className = getClassName(val);
-        if (prevClassName) {
-          element.classList.remove(prevClassName);
-        }
-        element.classList.add(className);
-        prevClassName = className;
-      });
-      return () => sub.unsubscribe();
+      return value.pipe(
+        tap((val: string) => {
+          const className = getClassName(val);
+          if (prevClassName) {
+            element.classList.remove(prevClassName);
+          }
+          element.classList.add(className);
+          prevClassName = className;
+        })
+      );
     } else {
       const className = getClassName(value);
       element.classList.add(className);

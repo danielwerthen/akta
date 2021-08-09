@@ -1,9 +1,9 @@
 import { isObservable, Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { standardCSSMethod } from './akta-styling2';
+import { standardCSSMethod } from './akta-styling';
 import MetaObject, { MethodMissing } from './meta-object';
 
-function isEvent(key: string) {
+export function isEvent(key: string) {
   return (
     key.startsWith('on') && key.substr(2, 1) === key.substr(2, 1).toUpperCase()
   );

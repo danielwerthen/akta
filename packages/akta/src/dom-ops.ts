@@ -4,7 +4,7 @@ import {
   continuationDependency,
   dependecyContext,
   teardownDependency,
-} from './akta-integrators';
+} from './dependencies';
 import { createDependencyMap, DependencyMap } from './dependency-map';
 import { AllElements, mountElement, unmountElement } from './element-ops';
 import { lazy } from './lazy-function';
