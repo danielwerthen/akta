@@ -1,4 +1,11 @@
-import { combineLatest, from, isObservable, Observable, of } from 'rxjs';
+import {
+  combineLatest,
+  firstValueFrom,
+  from,
+  isObservable,
+  Observable,
+  of,
+} from 'rxjs';
 import { filter, finalize, map, mapTo, switchMap, tap } from 'rxjs/operators';
 import {
   continuationDependency,
@@ -207,6 +214,18 @@ function produceElements(
   } else {
     return of(document.createTextNode(node.toString()));
   }
+}
+
+export function prepare(
+  element: AktaAllElements,
+  root: HTMLElement
+): Promise<void> {
+  const dependencies = dependecyContext.getContext();
+  const ctx = {
+    dependencies,
+    intrinsic: new AllElements(),
+  };
+  return firstValueFrom(applyChildren(element, root, ctx).pipe(mapTo(void 0)));
 }
 
 export function mount(element: AktaAllElements, root: HTMLElement) {
