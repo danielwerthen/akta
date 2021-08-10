@@ -138,13 +138,13 @@ function applyChildren(
   if (Array.isArray(children)) {
     const observables = children.map(
       (child: Exclude<AktaNode, AktaNode[]>, idx) => {
-        if (!child) {
+        if (child === null || child === undefined) {
           return new Observable(sub => {
             upsertElement(parent, document.createTextNode(''), idx);
             sub.next();
             sub.complete();
           });
-        } else if (typeof child === 'string') {
+        } else if (typeof child === 'string' || typeof child === 'number') {
           return new Observable(sub => {
             upsertElement(parent, document.createTextNode(child), idx);
             sub.next();
@@ -241,7 +241,7 @@ function produceElements(
   } else if (isAktaElement(node)) {
     return produceElement(node, ctx);
   } else {
-    return of(document.createTextNode(node.toString()));
+    return of(document.createTextNode(node ? node.toString() : ''));
   }
 }
 
