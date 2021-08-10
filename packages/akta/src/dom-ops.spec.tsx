@@ -40,7 +40,7 @@ describe('DOM OPS', () => {
 
   it('Array nodes are rendered correctly', async () => {
     const root = document.createElement('div');
-    const value = ['test', ['value', 'foobar'], 'more'];
+    const value = ['test', 'more'];
     await prepare(jsx('p', { children: value }), root);
     expect(root).toMatchSnapshot();
   });

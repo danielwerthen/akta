@@ -4,8 +4,6 @@ exports[`DOM OPS Array nodes are rendered correctly 1`] = `
 <div>
   <p>
     test
-    value
-    foobar
     more
   </p>
 </div>

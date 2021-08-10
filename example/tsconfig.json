@@ -4,6 +4,7 @@
     "target": "esnext",
     "module": "commonjs",
     "jsx": "preserve",
+    "jsxImportSource": "akta",
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,

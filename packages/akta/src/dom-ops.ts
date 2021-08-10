@@ -119,39 +119,37 @@ function applyChildren(
     return of(void 0);
   }
   if (Array.isArray(children)) {
-    const observables = children
-      .flat()
-      .map((child: Exclude<AktaNode, AktaNode[]>) => {
-        if (!child) {
-          return new Observable(sub => {
-            parent.appendChild(document.createTextNode(''));
-            sub.next();
-            sub.complete();
-          });
-        } else if (typeof child === 'string') {
-          return new Observable(sub => {
-            parent.appendChild(document.createTextNode(child));
-            sub.next();
-            sub.complete();
-          });
-        } else {
-          let oldNode: HTMLElement | Text | undefined;
-          return produceElements(child, ctx).pipe(
-            tap(newNode => {
-              if (oldNode) {
-                unmountElement(oldNode);
-                mountElement(newNode);
-                parent.replaceChild(newNode, oldNode);
-              } else {
-                parent.appendChild(newNode);
-                mountElement(newNode);
-              }
-              oldNode = newNode;
-            }),
-            filter(onlyFirst)
-          );
-        }
-      });
+    const observables = children.map((child: Exclude<AktaNode, AktaNode[]>) => {
+      if (!child) {
+        return new Observable(sub => {
+          parent.appendChild(document.createTextNode(''));
+          sub.next();
+          sub.complete();
+        });
+      } else if (typeof child === 'string') {
+        return new Observable(sub => {
+          parent.appendChild(document.createTextNode(child));
+          sub.next();
+          sub.complete();
+        });
+      } else {
+        let oldNode: HTMLElement | Text | undefined;
+        return produceElements(child, ctx).pipe(
+          tap(newNode => {
+            if (oldNode) {
+              unmountElement(oldNode);
+              mountElement(newNode);
+              parent.replaceChild(newNode, oldNode);
+            } else {
+              parent.appendChild(newNode);
+              mountElement(newNode);
+            }
+            oldNode = newNode;
+          }),
+          filter(onlyFirst)
+        );
+      }
+    });
     return combineLatest(observables).pipe(mapTo(void 0));
   }
   let oldNode: HTMLElement | Text;
