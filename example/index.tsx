@@ -1,4 +1,4 @@
-import { mount } from 'akta';
+import { mount, Props } from 'akta';
 import { finalize, interval } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -11,6 +11,7 @@ function App() {
     <div>
       <p>Loops:</p>
       {loop}
+      {'daniel is <div>bad</div>'}
     </div>
   );
 }

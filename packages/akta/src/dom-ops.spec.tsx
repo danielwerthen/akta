@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { from, Observable } from 'rxjs';
 import { prepare } from './dom-ops';
 import { jsx } from './jsx-runtime';
 
@@ -8,7 +8,12 @@ describe('DOM OPS', () => {
     const value = new Observable(sub => {
       setTimeout((item: string) => sub.next(item), 10, 'foobar');
     });
-    const promise = prepare(jsx('p', { children: value }), root);
+    const promise = prepare(
+      jsx('p', {
+        children: ['top', from(['immediate', 'immediate2']), value, 'bottom'],
+      }),
+      root
+    );
     expect(root).toMatchSnapshot();
     await promise;
     expect(root).toMatchSnapshot();

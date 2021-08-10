@@ -14,7 +14,10 @@ exports[`DOM OPS Observable child nodes are rendered correctly 1`] = `<div />`;
 exports[`DOM OPS Observable child nodes are rendered correctly 2`] = `
 <div>
   <p>
+    top
+    immediate2
     foobar
+    bottom
   </p>
 </div>
 `;

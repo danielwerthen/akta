@@ -107,6 +107,23 @@ export function callComponent<PROPS>(
   return [element, deps];
 }
 
+function upsertElement(
+  parent: HTMLElement,
+  child: HTMLElement | Text,
+  index: number = 0,
+  replace = false
+) {
+  if (index >= parent.childNodes.length) {
+    parent.appendChild(child);
+  } else {
+    if (replace) {
+      parent.childNodes[index].replaceWith(child);
+    } else {
+      parent.insertBefore(child, parent.childNodes[index]);
+    }
+  }
+}
+
 function applyChildren(
   children: AktaNode,
   parent: HTMLElement,
@@ -119,37 +136,30 @@ function applyChildren(
     return of(void 0);
   }
   if (Array.isArray(children)) {
-    const observables = children.map((child: Exclude<AktaNode, AktaNode[]>) => {
-      if (!child) {
-        return new Observable(sub => {
-          parent.appendChild(document.createTextNode(''));
-          sub.next();
-          sub.complete();
-        });
-      } else if (typeof child === 'string') {
-        return new Observable(sub => {
-          parent.appendChild(document.createTextNode(child));
-          sub.next();
-          sub.complete();
-        });
-      } else {
-        let oldNode: HTMLElement | Text | undefined;
-        return produceElements(child, ctx).pipe(
-          tap(newNode => {
-            if (oldNode) {
-              unmountElement(oldNode);
-              mountElement(newNode);
-              parent.replaceChild(newNode, oldNode);
-            } else {
-              parent.appendChild(newNode);
-              mountElement(newNode);
-            }
-            oldNode = newNode;
-          }),
-          filter(onlyFirst)
-        );
+    const observables = children.map(
+      (child: Exclude<AktaNode, AktaNode[]>, idx) => {
+        if (!child) {
+          return new Observable(sub => {
+            upsertElement(parent, document.createTextNode(''), idx);
+            sub.next();
+            sub.complete();
+          });
+        } else if (typeof child === 'string') {
+          return new Observable(sub => {
+            upsertElement(parent, document.createTextNode(child), idx);
+            sub.next();
+            sub.complete();
+          });
+        } else {
+          return produceElements(child, ctx).pipe(
+            map((newNode, iter) => {
+              upsertElement(parent, newNode, idx, iter > 0);
+            }),
+            filter(onlyFirst)
+          );
+        }
       }
-    });
+    );
     return combineLatest(observables).pipe(mapTo(void 0));
   }
   let oldNode: HTMLElement | Text;
