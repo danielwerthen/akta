@@ -16,6 +16,7 @@ describe('DOM OPS', () => {
     );
     expect(root).toMatchSnapshot();
     await promise;
+    await new Promise(res => setTimeout(res, 100));
     expect(root).toMatchSnapshot();
   });
   it('should render within range of comparison implementation', async () => {

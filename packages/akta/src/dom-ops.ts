@@ -136,31 +136,40 @@ function applyChildren(
     return of(void 0);
   }
   if (Array.isArray(children)) {
-    const observables = children.map(
-      (child: Exclude<AktaNode, AktaNode[]>, idx) => {
-        if (child === null || child === undefined) {
-          return new Observable(sub => {
-            upsertElement(parent, document.createTextNode(''), idx);
-            sub.next();
-            sub.complete();
+    let lineup: (HTMLElement | Text)[] | null = [];
+    const observables = children.map((child: AktaAllElements, idx) => {
+      return produceElements(child, ctx).pipe(
+        map((newNode, iter) => {
+          if (lineup) {
+            lineup[idx] = newNode;
+          } else {
+            upsertElement(parent, newNode, idx, iter > 0);
+          }
+          return newNode;
+        }),
+        filter<HTMLElement | Text>(onlyFirst)
+      );
+    });
+    return combineLatest(observables).pipe(
+      map(() => {
+        if (lineup) {
+          while (parent.firstChild) {
+            parent.firstChild.remove();
+          }
+          lineup.forEach(node => {
+            parent.appendChild(node);
           });
-        } else if (typeof child === 'string' || typeof child === 'number') {
-          return new Observable(sub => {
-            upsertElement(parent, document.createTextNode(child), idx);
-            sub.next();
-            sub.complete();
-          });
-        } else {
-          return produceElements(child, ctx).pipe(
-            map((newNode, iter) => {
-              upsertElement(parent, newNode, idx, iter > 0);
-            }),
-            filter(onlyFirst)
-          );
         }
-      }
+        lineup = null;
+      }),
+      mapTo(void 0)
     );
-    return combineLatest(observables).pipe(mapTo(void 0));
+  } else if (isObservable(children)) {
+    return children.pipe(
+      switchMap(child => {
+        return applyChildren(child, parent, ctx);
+      })
+    );
   }
   let oldNode: HTMLElement | Text;
   return produceElements(children, ctx).pipe(

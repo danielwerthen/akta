@@ -16,6 +16,17 @@ function Display() {
   );
 }
 
+function ObsArray() {
+  return (
+    <div>
+      {from([
+        [1, 2, 3],
+        [2, 3, 4],
+      ])}
+    </div>
+  );
+}
+
 function App() {
   const loop = interval(1000).pipe(
     startWith(-1),
@@ -24,6 +35,7 @@ function App() {
   );
   return (
     <div>
+      <ObsArray />
       <p>Loops:</p>
       {loop}
       {'daniel is <div>bad</div>'}
