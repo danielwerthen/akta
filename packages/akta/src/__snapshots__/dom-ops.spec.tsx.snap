@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DOM OPS Array nodes are rendered correctly 1`] = `
+<div>
+  <p>
+    test
+    value
+    foobar
+    more
+  </p>
+</div>
+`;
+
+exports[`DOM OPS Observable child nodes are rendered correctly 1`] = `<div />`;
+
+exports[`DOM OPS Observable child nodes are rendered correctly 2`] = `
+<div>
+  <p>
+    foobar
+  </p>
+</div>
+`;

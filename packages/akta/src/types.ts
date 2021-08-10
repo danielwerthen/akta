@@ -16,6 +16,8 @@ export type ObservableElements =
 
 export type AktaAllElements = AktaElement | ObservableElements;
 
+export type AktaNode = AktaAllElements | string | null | AktaNode[];
+
 export const AktaElementType = Symbol('Akta element');
 
 export function isAktaElement(node: unknown): node is AktaElement {

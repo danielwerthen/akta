@@ -19,6 +19,7 @@ import {
   AktaAllElements,
   AktaComponent,
   AktaElement,
+  AktaNode,
   isAktaElement,
 } from './types';
 
@@ -107,29 +108,49 @@ export function callComponent<PROPS>(
 }
 
 function applyChildren(
-  children: AktaAllElements | AktaAllElements[],
+  children: AktaNode,
   parent: HTMLElement,
   ctx: AktaContext
 ): Observable<unknown> {
+  if (!children) {
+    return of(void 0);
+  } else if (typeof children === 'string') {
+    parent.appendChild(document.createTextNode(children));
+    return of(void 0);
+  }
   if (Array.isArray(children)) {
     const observables = children
-      .map(child => produceElements(child, ctx))
-      .map(observedChild => {
-        let oldNode: HTMLElement | Text | undefined;
-        return observedChild.pipe(
-          tap(newNode => {
-            if (oldNode) {
-              unmountElement(oldNode);
-              mountElement(newNode);
-              parent.replaceChild(newNode, oldNode);
-            } else {
-              parent.appendChild(newNode);
-              mountElement(newNode);
-            }
-            oldNode = newNode;
-          }),
-          filter(onlyFirst)
-        );
+      .flat()
+      .map((child: Exclude<AktaNode, AktaNode[]>) => {
+        if (!child) {
+          return new Observable(sub => {
+            parent.appendChild(document.createTextNode(''));
+            sub.next();
+            sub.complete();
+          });
+        } else if (typeof child === 'string') {
+          return new Observable(sub => {
+            parent.appendChild(document.createTextNode(child));
+            sub.next();
+            sub.complete();
+          });
+        } else {
+          let oldNode: HTMLElement | Text | undefined;
+          return produceElements(child, ctx).pipe(
+            tap(newNode => {
+              if (oldNode) {
+                unmountElement(oldNode);
+                mountElement(newNode);
+                parent.replaceChild(newNode, oldNode);
+              } else {
+                parent.appendChild(newNode);
+                mountElement(newNode);
+              }
+              oldNode = newNode;
+            }),
+            filter(onlyFirst)
+          );
+        }
       });
     return combineLatest(observables).pipe(mapTo(void 0));
   }

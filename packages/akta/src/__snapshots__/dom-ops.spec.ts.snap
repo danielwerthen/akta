@@ -1,9 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`DOM OPS should fail 1`] = `
-<div>
-  <p>
-    foobar
-  </p>
-</div>
-`;
