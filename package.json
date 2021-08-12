@@ -23,6 +23,7 @@
     "lerna": "lerna",
     "start": "lerna run start --stream --parallel",
     "test": "lerna run test --",
+    "test:mem": "lerna run test:mem --",
     "lint": "lerna run lint -- --fix",
     "build": "lerna run build",
     "prepublish": "lerna run prepublish",
