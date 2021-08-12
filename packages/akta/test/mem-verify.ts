@@ -9,6 +9,9 @@ function register(obj: any) {
   if (!WRef) {
     WRef = (global as any).WeakRef;
   }
+  if (!WRef) {
+    return;
+  }
   subjects.push(new WRef(obj));
 }
 
@@ -79,6 +82,11 @@ function sleep(ms: number) {
 export function verify(fn: () => Promise<void>) {
   return async () => {
     subjects.splice(0, subjects.length);
+    if (typeof global.gc === 'undefined') {
+      console.warn('Skipping memory verification');
+      await fn();
+      return;
+    }
     global.gc();
     await fn();
     {
