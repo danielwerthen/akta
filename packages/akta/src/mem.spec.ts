@@ -19,7 +19,7 @@ describe('ObserveAsync', () => {
         () => prepare(jsx('div', { children: value }), root),
         createDependencyMap()
       );
-      value.next(jsx(Comp, {}));
+      value.next([jsx(Comp, {})]);
       await promise;
       expect(root).toMatchSnapshot();
     })

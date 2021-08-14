@@ -6,12 +6,8 @@ import {
   Observable,
   of,
 } from 'rxjs';
-import { filter, finalize, map, mapTo, switchMap, tap } from 'rxjs/operators';
-import {
-  continuationDependency,
-  dependecyContext,
-  teardownDependency,
-} from './dependencies';
+import { filter, map, mapTo, switchMap, tap } from 'rxjs/operators';
+import { continuationDependency, dependecyContext } from './dependencies';
 import { createDependencyMap, DependencyMap } from './dependency-map';
 import { AllElements, mountElement, unmountElement } from './element-ops';
 import { lazy } from './lazy-function';
@@ -27,6 +23,8 @@ type AktaContext = {
   intrinsic: AllElements;
   dependencies: DependencyMap;
 };
+
+type DOMNode = HTMLElement | Text;
 
 function applyProp(
   element: HTMLElement,
@@ -128,28 +126,48 @@ function applyChildren(
   children: AktaNode,
   parent: HTMLElement,
   ctx: AktaContext
-): Observable<unknown> {
+): Observable<unknown> | void {
   if (!children) {
-    return of(void 0);
+    return;
   } else if (typeof children === 'string') {
     parent.appendChild(document.createTextNode(children));
-    return of(void 0);
+    return;
   }
   if (Array.isArray(children)) {
     let lineup: (HTMLElement | Text)[] | null = [];
-    const observables = children.map((child: AktaAllElements, idx) => {
-      return produceElements(child, ctx).pipe(
-        map((newNode, iter) => {
-          if (lineup) {
-            lineup[idx] = newNode;
-          } else {
-            upsertElement(parent, newNode, idx, iter > 0);
-          }
-          return newNode;
-        }),
-        filter<HTMLElement | Text>(onlyFirst)
+    const observables = children
+      .map((child: AktaAllElements, idx) => {
+        const item = produceElements(child, ctx);
+        if (isObservable(item)) {
+          return item.pipe(
+            map((newNode, iter) => {
+              if (lineup) {
+                lineup[idx] = newNode;
+              } else {
+                upsertElement(parent, newNode, idx, iter > 0);
+              }
+              return newNode;
+            }),
+            filter<HTMLElement | Text>(onlyFirst)
+          );
+        }
+        if (lineup) {
+          lineup[idx] = item;
+        } else {
+          upsertElement(parent, item, idx, false);
+        }
+        return;
+      })
+      .filter<Observable<DOMNode>>(
+        (item: unknown): item is Observable<DOMNode> => !!item
       );
-    });
+    if (observables.length < 1) {
+      lineup.forEach(node => {
+        parent.appendChild(node);
+      });
+      lineup = null;
+      return;
+    }
     return combineLatest(observables).pipe(
       map(() => {
         if (lineup) {
@@ -167,31 +185,35 @@ function applyChildren(
   } else if (isObservable(children)) {
     return children.pipe(
       switchMap(child => {
-        return applyChildren(child, parent, ctx);
+        return applyChildren(child, parent, ctx) ?? of(void 0);
       })
     );
   }
-  let oldNode: HTMLElement | Text;
-  return produceElements(children, ctx).pipe(
-    tap(newNode => {
-      if (oldNode) {
-        parent.replaceChild(newNode, oldNode);
-        mountElement(newNode);
-        unmountElement(oldNode);
-      } else {
-        parent.appendChild(newNode);
-        mountElement(newNode);
-      }
-      oldNode = newNode;
-    }),
-    filter(onlyFirst)
-  );
+  const item = produceElements(children, ctx);
+  if (isObservable(item)) {
+    let oldNode: HTMLElement | Text;
+    return item.pipe(
+      tap(newNode => {
+        if (oldNode) {
+          parent.replaceChild(newNode, oldNode);
+          mountElement(newNode);
+          unmountElement(oldNode);
+        } else {
+          parent.appendChild(newNode);
+          mountElement(newNode);
+        }
+        oldNode = newNode;
+      }),
+      filter(onlyFirst)
+    );
+  }
+  parent.appendChild(item);
 }
 
 function produceElement(
   node: AktaElement,
   ctx: AktaContext
-): Observable<HTMLElement | Text> {
+): Observable<DOMNode> | DOMNode {
   const { type, props } = node;
   if (typeof type === 'string') {
     const element = document.createElement(type);
@@ -206,7 +228,7 @@ function produceElement(
       }
     }
     if (observables.length < 1) {
-      return of(element);
+      return element;
     }
     return combineLatest(observables).pipe(mapTo(element));
   } else if (typeof type === 'function') {
@@ -216,14 +238,10 @@ function produceElement(
       ctx.dependencies
     );
 
-    const teardown = dependencies.get(teardownDependency);
     const output = produceElements(element, { ...ctx, dependencies });
-    if (teardown) {
-      return output.pipe(finalize(teardown));
-    }
     return output;
   } else {
-    return of(emptyNode());
+    return emptyNode();
   }
 }
 
@@ -234,23 +252,25 @@ function isPromise(obj: unknown): obj is Promise<unknown> {
 function produceElements(
   node: AktaAllElements,
   ctx: AktaContext
-): Observable<HTMLElement | Text> {
+): Observable<DOMNode> | DOMNode {
   if (isObservable(node)) {
     return node.pipe(
       switchMap(innerNode => {
-        return produceElements(innerNode, ctx);
+        const item = produceElements(innerNode, ctx);
+        return isObservable(item) ? item : of(item);
       })
     );
   } else if (isPromise(node)) {
     return from(node).pipe(
       switchMap((innerNode: AktaAllElements) => {
-        return produceElements(innerNode, ctx);
+        const item = produceElements(innerNode, ctx);
+        return isObservable(item) ? item : of(item);
       })
     );
   } else if (isAktaElement(node)) {
     return produceElement(node, ctx);
   } else {
-    return of(document.createTextNode(node ? node.toString() : ''));
+    return document.createTextNode(node ? node.toString() : '');
   }
 }
 
@@ -263,7 +283,10 @@ export function prepare(
     dependencies,
     intrinsic: new AllElements(),
   };
-  return firstValueFrom(applyChildren(element, root, ctx).pipe(mapTo(void 0)));
+  const rest = applyChildren(element, root, ctx);
+  return isObservable(rest)
+    ? firstValueFrom(rest.pipe(mapTo(void 0)))
+    : Promise.resolve();
 }
 
 export function mount(element: AktaAllElements, root: HTMLElement) {
@@ -271,7 +294,10 @@ export function mount(element: AktaAllElements, root: HTMLElement) {
     dependencies: createDependencyMap(),
     intrinsic: new AllElements(),
   };
-  const sub = applyChildren(element, root, ctx).subscribe();
-
-  return () => sub.unsubscribe();
+  const rest = applyChildren(element, root, ctx);
+  if (isObservable(rest)) {
+    const sub = rest.subscribe();
+    return () => sub.unsubscribe();
+  }
+  return () => void 0;
 }
