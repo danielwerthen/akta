@@ -1,6 +1,7 @@
-import { from, Observable } from 'rxjs';
-import { prepare } from './dom-ops';
+import { firstValueFrom, from, Observable, Subject, toArray } from 'rxjs';
+import { mount, prepare } from './dom-ops';
 import { jsx } from './jsx-runtime';
+import { AktaNode } from './types';
 
 describe('DOM OPS', () => {
   it('Observable child nodes are rendered correctly', async () => {
@@ -49,5 +50,53 @@ describe('DOM OPS', () => {
     const value = ['test', 'more'];
     await prepare(jsx('p', { children: value }), root);
     expect(root).toMatchSnapshot();
+  });
+
+  it('mount and unmount is called at the right time', async () => {
+    const root = document.createElement('div');
+    const value = new Subject<AktaNode>();
+    const unsub = mount(jsx('p', { children: value }), root);
+    const onMount = new Subject<unknown>();
+    const onUnmount = new Subject<unknown>();
+    const mounts = firstValueFrom(onMount.pipe(toArray()));
+    const unmounts = firstValueFrom(onUnmount.pipe(toArray()));
+    value.next(jsx('div', { onMount, onUnmount, children: 'first' }));
+    await new Promise(res => setTimeout(res, 10));
+    value.next(jsx('div', { children: 'final' }));
+    await new Promise(res => setTimeout(res, 10));
+    unsub();
+    onMount.complete();
+    onUnmount.complete();
+    expect(root).toMatchSnapshot();
+    expect((await mounts).length).toBe(1);
+    expect((await unmounts).length).toBe(1);
+  });
+
+  it('deep mount and unmount is called at the right time', async () => {
+    const root = document.createElement('div');
+    const value = new Subject<AktaNode>();
+    const unsub = mount(jsx('p', { children: value }), root);
+    const onMount = new Subject<unknown>();
+    const onUnmount = new Subject<unknown>();
+    const mounts = firstValueFrom(onMount.pipe(toArray()));
+    const unmounts = firstValueFrom(onUnmount.pipe(toArray()));
+    value.next(
+      jsx('div', {
+        children: jsx('div', {
+          onMount,
+          onUnmount,
+          children: jsx('div', { onMount, onUnmount, children: 'first' }),
+        }),
+      })
+    );
+    await new Promise(res => setTimeout(res, 10));
+    value.next(jsx('div', { children: 'final' }));
+    await new Promise(res => setTimeout(res, 10));
+    unsub();
+    onMount.complete();
+    onUnmount.complete();
+    expect(root).toMatchSnapshot();
+    expect((await mounts).length).toBe(2);
+    expect((await unmounts).length).toBe(2);
   });
 });

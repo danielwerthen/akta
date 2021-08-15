@@ -127,7 +127,12 @@ function applyChildren(
               if (lineup) {
                 lineup[idx] = newNode;
               } else {
+                const oldNode = parent.childNodes[idx];
+                if (oldNode instanceof HTMLElement) {
+                  unmountElement(oldNode);
+                }
                 parent.childNodes[idx].replaceWith(newNode);
+                mountElement(newNode);
               }
               return newNode;
             }),
@@ -138,6 +143,7 @@ function applyChildren(
           lineup[idx] = item;
         } else {
           parent.appendChild(item);
+          mountElement(item);
         }
         return;
       })
@@ -147,6 +153,7 @@ function applyChildren(
     if (observables.length < 1) {
       lineup.forEach(node => {
         parent.appendChild(node);
+        mountElement(node);
       });
       lineup = null;
       return;
@@ -155,19 +162,50 @@ function applyChildren(
       map(() => {
         if (lineup) {
           while (parent.firstChild) {
+            if (parent.firstChild instanceof HTMLElement) {
+              unmountElement(parent.firstChild);
+            }
             parent.firstChild.remove();
           }
           lineup.forEach(node => {
             parent.appendChild(node);
+            mountElement(node);
           });
         }
         lineup = null;
       })
     );
   } else if (isObservable(children)) {
+    let oldNode: DOMNode;
     return children.pipe(
       switchMap(child => {
-        return applyChildren(child, parent, ctx) ?? of(void 0);
+        const item = produceElements(child, ctx);
+        if (isObservable(item)) {
+          return item.pipe(
+            tap(newNode => {
+              if (oldNode) {
+                parent.replaceChild(newNode, oldNode);
+                mountElement(newNode);
+                unmountElement(oldNode);
+              } else {
+                parent.appendChild(newNode);
+                mountElement(newNode);
+              }
+              oldNode = newNode;
+            }),
+            filter(onlyFirst)
+          );
+        }
+        if (oldNode) {
+          unmountElement(oldNode);
+          parent.replaceChild(item, oldNode);
+          mountElement(item);
+        } else {
+          parent.appendChild(item);
+          mountElement(item);
+        }
+        oldNode = item;
+        return of(void 0);
       })
     );
   }
@@ -190,6 +228,7 @@ function applyChildren(
     );
   }
   parent.appendChild(item);
+  mountElement(item);
 }
 
 function produceElement(

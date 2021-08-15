@@ -21,3 +21,23 @@ exports[`DOM OPS Observable child nodes are rendered correctly 2`] = `
   </p>
 </div>
 `;
+
+exports[`DOM OPS deep mount and unmount is called at the right time 1`] = `
+<div>
+  <p>
+    <div>
+      final
+    </div>
+  </p>
+</div>
+`;
+
+exports[`DOM OPS mount and unmount is called at the right time 1`] = `
+<div>
+  <p>
+    <div>
+      final
+    </div>
+  </p>
+</div>
+`;

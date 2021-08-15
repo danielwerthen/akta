@@ -26,6 +26,14 @@ export function mountElement<T extends HTMLElement | Text>(element: T) {
 }
 
 export function unmountElement<T extends HTMLElement | Text>(element: T) {
+  if (element instanceof HTMLElement) {
+    for (let i = 0; i < element.children.length; i++) {
+      const child = element.children[i];
+      if (child instanceof HTMLElement) {
+        unmountElement(child);
+      }
+    }
+  }
   const unmount = ((element ?? empty) as AktaMountable<T>)[AKTA_UNMOUNT];
   if (unmount) {
     unmount.next(element);
