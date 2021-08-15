@@ -176,36 +176,9 @@ function applyChildren(
       })
     );
   } else if (isObservable(children)) {
-    let oldNode: DOMNode;
     return children.pipe(
       switchMap(child => {
-        const item = produceElements(child, ctx);
-        if (isObservable(item)) {
-          return item.pipe(
-            tap(newNode => {
-              if (oldNode) {
-                parent.replaceChild(newNode, oldNode);
-                mountElement(newNode);
-                unmountElement(oldNode);
-              } else {
-                parent.appendChild(newNode);
-                mountElement(newNode);
-              }
-              oldNode = newNode;
-            }),
-            filter(onlyFirst)
-          );
-        }
-        if (oldNode) {
-          unmountElement(oldNode);
-          parent.replaceChild(item, oldNode);
-          mountElement(item);
-        } else {
-          parent.appendChild(item);
-          mountElement(item);
-        }
-        oldNode = item;
-        return of(void 0);
+        return applyChildren(child, parent, ctx) ?? of(void 0);
       })
     );
   }
@@ -226,6 +199,12 @@ function applyChildren(
       }),
       filter(onlyFirst)
     );
+  }
+  while (parent.firstChild) {
+    if (parent.firstChild instanceof HTMLElement) {
+      unmountElement(parent.firstChild);
+    }
+    parent.firstChild.remove();
   }
   parent.appendChild(item);
   mountElement(item);
