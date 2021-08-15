@@ -105,23 +105,6 @@ export function callComponent<PROPS>(
   return [element, deps];
 }
 
-function upsertElement(
-  parent: HTMLElement,
-  child: HTMLElement | Text,
-  index: number = 0,
-  replace = false
-) {
-  if (index >= parent.childNodes.length) {
-    parent.appendChild(child);
-  } else {
-    if (replace) {
-      parent.childNodes[index].replaceWith(child);
-    } else {
-      parent.insertBefore(child, parent.childNodes[index]);
-    }
-  }
-}
-
 function applyChildren(
   children: AktaNode,
   parent: HTMLElement,
@@ -140,11 +123,11 @@ function applyChildren(
         const item = produceElements(child, ctx);
         if (isObservable(item)) {
           return item.pipe(
-            map((newNode, iter) => {
+            map(newNode => {
               if (lineup) {
                 lineup[idx] = newNode;
               } else {
-                upsertElement(parent, newNode, idx, iter > 0);
+                parent.childNodes[idx].replaceWith(newNode);
               }
               return newNode;
             }),
@@ -154,7 +137,7 @@ function applyChildren(
         if (lineup) {
           lineup[idx] = item;
         } else {
-          upsertElement(parent, item, idx, false);
+          parent.appendChild(item);
         }
         return;
       })
@@ -179,8 +162,7 @@ function applyChildren(
           });
         }
         lineup = null;
-      }),
-      mapTo(void 0)
+      })
     );
   } else if (isObservable(children)) {
     return children.pipe(
