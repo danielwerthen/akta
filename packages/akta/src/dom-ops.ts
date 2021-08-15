@@ -7,7 +7,11 @@ import {
   of,
 } from 'rxjs';
 import { filter, map, mapTo, switchMap, tap } from 'rxjs/operators';
-import { continuationDependency, dependecyContext } from './dependencies';
+import {
+  continuationDependency,
+  dependecyContext,
+  teardownDependency,
+} from './dependencies';
 import { createDependencyMap, DependencyMap } from './dependency-map';
 import { AllElements, mountElement, unmountElement } from './element-ops';
 import { lazy } from './lazy-function';
@@ -57,6 +61,7 @@ export function callComponent<PROPS>(
   parentDeps: DependencyMap
 ): [AktaAllElements, DependencyMap] {
   const deps = parentDeps.branch();
+  deps.provide(teardownDependency, []);
   const element = dependecyContext.setContext(() => {
     return component(props);
   }, deps);
@@ -239,7 +244,22 @@ function produceElement(
     );
 
     const output = produceElements(element, { ...ctx, dependencies });
-    return output;
+    return new Observable(sub => {
+      sub.add(() => {
+        const fns = dependencies.get(teardownDependency);
+        if (fns) {
+          fns.forEach(item => item());
+        }
+      });
+      if (isObservable(output)) {
+        return output.subscribe({
+          ...sub,
+          error: undefined,
+        });
+      }
+      sub.next(output);
+      return;
+    });
   } else {
     return emptyNode();
   }

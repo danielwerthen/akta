@@ -52,7 +52,15 @@ export function createDependencyMap(parent?: DependencyMap): DependencyMap {
     return parent ? parent(dep) : of(dep.value);
   };
   map.get = <T>(dep: Dependency<T>) => {
-    return (store.get(dep.key)?.value as T) ?? (parent?.get(dep) as T);
+    const local = store.get(dep.key)?.value as T;
+    if (!local || (local as unknown) === LocalStop) {
+      const parVal = parent?.get(dep) as T;
+      if (!parVal || (parVal as unknown) === LocalStop) {
+        return dep.value;
+      }
+      return parVal;
+    }
+    return local;
   };
   return map;
 }

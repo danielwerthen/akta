@@ -1,4 +1,5 @@
 import { firstValueFrom, from, Observable, Subject, toArray } from 'rxjs';
+import { useTeardown } from './dependencies';
 import { mount, prepare } from './dom-ops';
 import { jsx } from './jsx-runtime';
 import { AktaNode } from './types';
@@ -98,5 +99,24 @@ describe('DOM OPS', () => {
     expect(root).toMatchSnapshot();
     expect((await mounts).length).toBe(2);
     expect((await unmounts).length).toBe(2);
+  });
+  it('should handle teardown', async () => {
+    const root = document.createElement('div');
+    const value = new Subject<AktaNode>();
+    const teardown = jest.fn();
+    function Comp() {
+      useTeardown(teardown);
+      return jsx('p', { children: 'Data' });
+    }
+    const unsub = mount(jsx('div', { children: value }), root);
+    value.next(jsx(Comp, {}));
+    expect(teardown.mock.calls.length).toBe(0);
+    value.next(jsx(Comp, {}));
+    expect(teardown.mock.calls.length).toBe(1);
+    value.next(jsx(Comp, {}));
+    expect(teardown.mock.calls.length).toBe(2);
+    unsub();
+    expect(teardown.mock.calls.length).toBe(3);
+    expect(root).toMatchSnapshot();
   });
 });
