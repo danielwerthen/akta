@@ -10,7 +10,7 @@ export type DependencyMap = {
   <T>(dep: Dependency<T>): Observable<T>;
   use<T>(dep: Dependency<T>): Observable<T>;
   get<T>(dep: Dependency<T>): T | null;
-  provide<T>(dep: Dependency<T>, value: T): void;
+  provide<T>(dep: Dependency<T>, value: T | ((old?: T) => T)): void;
   branch(): DependencyMap;
 };
 
@@ -37,16 +37,22 @@ export function createDependencyMap(parent?: DependencyMap): DependencyMap {
     );
   }
   const map: DependencyMap = dependencyMap as DependencyMap;
+
   map.branch = () => createDependencyMap(map);
   map.provide = (dep, value) => {
     const subject = getLocal(dep);
-    subject.next(value);
+    if (typeof value === 'function') {
+      const fn = value as <T>(old?: T) => T;
+      subject.next(fn(map.get(dep) ?? undefined));
+    } else {
+      subject.next(value);
+    }
   };
   map.use = dep => {
     return parent ? parent(dep) : of(dep.value);
   };
   map.get = <T>(dep: Dependency<T>) => {
-    return store.get(dep.key)?.value as T;
+    return (store.get(dep.key)?.value as T) ?? (parent?.get(dep) as T);
   };
   return map;
 }

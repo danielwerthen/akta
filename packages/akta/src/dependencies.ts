@@ -9,7 +9,7 @@ import { AktaAllElements, ElementProperties } from './types';
 export const dependecyContext = createSyncContext<DependencyMap>();
 export const continuationDependency = createDependency(lazy());
 export type TeardownFunction = () => void;
-export const teardownDependency = createDependency<null | TeardownFunction>(
+export const teardownDependency = createDependency<null | TeardownFunction[]>(
   null
 );
 
@@ -30,7 +30,13 @@ export function useNext<
 
 export function useTeardown(fn: TeardownFunction) {
   const ctx = dependecyContext.getContext();
-  ctx.provide(teardownDependency, fn);
+  ctx.provide(teardownDependency, fns => {
+    if (!fns) {
+      return [fn];
+    }
+    fns.push(fn);
+    return fns;
+  });
 }
 
 export class PropertiesBase extends MetaObject<
