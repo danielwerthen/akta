@@ -1,4 +1,12 @@
-import { firstValueFrom, from, Observable, Subject, toArray } from 'rxjs';
+import {
+  BehaviorSubject,
+  firstValueFrom,
+  from,
+  Observable,
+  of,
+  Subject,
+  toArray,
+} from 'rxjs';
 import { useTeardown } from './dependencies';
 import { mount, prepare } from './dom-ops';
 import { jsx } from './jsx-runtime';
@@ -10,14 +18,13 @@ describe('DOM OPS', () => {
     const value = new Observable(sub => {
       setTimeout((item: string) => sub.next(item), 10, 'foobar');
     });
-    const promise = prepare(
+    mount(
       jsx('p', {
         children: ['top', from(['immediate', 'immediate2']), value, 'bottom'],
       }),
       root
     );
     expect(root).toMatchSnapshot();
-    await promise;
     await new Promise(res => setTimeout(res, 100));
     expect(root).toMatchSnapshot();
   });
@@ -28,7 +35,7 @@ describe('DOM OPS', () => {
       jsx('span', { children: 'word', className: 'foobar' })
     );
     const t0 = performance.now();
-    await prepare(jsx('p', { children: value }), root);
+    mount(jsx('p', { children: value }), root);
     function update(span: HTMLSpanElement) {
       span.classList.add('foobar');
       span.innerText = 'word';
@@ -49,7 +56,7 @@ describe('DOM OPS', () => {
   it('Array nodes are rendered correctly', async () => {
     const root = document.createElement('div');
     const value = ['test', 'more'];
-    await prepare(jsx('p', { children: value }), root);
+    mount(jsx('p', { children: value }), root);
     expect(root).toMatchSnapshot();
   });
 
@@ -118,5 +125,33 @@ describe('DOM OPS', () => {
     unsub();
     expect(teardown.mock.calls.length).toBe(3);
     expect(root).toMatchSnapshot();
+  });
+
+  it.only('should handle prepare', async () => {
+    const root = document.createElement('div');
+    const eventually = new Subject<AktaNode>();
+    function Comp() {
+      const children = new BehaviorSubject<AktaNode>('Loading');
+      prepare(jsx('span', { children: eventually })).then(res => {
+        children.next(res);
+      });
+      return jsx('p', { children });
+    }
+    const unsub = mount(jsx(Comp, {}), root);
+    await new Promise(res => setTimeout(res, 10));
+    expect(root).toMatchSnapshot();
+    eventually.next('Finally2');
+    await new Promise(res => setTimeout(res, 10));
+    unsub();
+    expect(root).toMatchSnapshot();
+  });
+  it('should handle observable child', async () => {
+    const root = document.createElement('div');
+    function Comp() {
+      return jsx('p', { children: of('Daniel') });
+    }
+    const unsub = mount(jsx(Comp, {}), root);
+    expect(root).toMatchSnapshot();
+    unsub();
   });
 });

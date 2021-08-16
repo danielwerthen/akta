@@ -5,21 +5,25 @@ import {
   isObservable,
   Observable,
   of,
+  ReplaySubject,
 } from 'rxjs';
 import { filter, map, mapTo, switchMap, tap } from 'rxjs/operators';
 import {
   continuationDependency,
   dependecyContext,
   teardownDependency,
+  useTeardown,
 } from './dependencies';
 import { createDependencyMap, DependencyMap } from './dependency-map';
 import { AllElements, mountElement, unmountElement } from './element-ops';
+import { jsx } from './jsx-runtime';
 import { lazy } from './lazy-function';
 import {
   AktaAllElements,
   AktaComponent,
   AktaElement,
   AktaNode,
+  AktaPreparedComponent,
   isAktaElement,
 } from './types';
 
@@ -49,6 +53,9 @@ const emptyNode = () => document.createTextNode('');
 function isGenerator(
   obj: unknown
 ): obj is Generator<any, any, any> | AsyncGenerator<any, any, any> {
+  if (!obj) {
+    return false;
+  }
   if (typeof obj === 'object') {
     return typeof (obj as Generator<any, any, any>).next === 'function';
   }
@@ -59,7 +66,7 @@ export function callComponent<PROPS>(
   component: AktaComponent<PROPS>,
   props: PROPS,
   parentDeps: DependencyMap
-): [AktaAllElements, DependencyMap] {
+): [ReturnType<AktaComponent<PROPS>>, DependencyMap] {
   const deps = parentDeps.branch();
   deps.provide(teardownDependency, []);
   const element = dependecyContext.setContext(() => {
@@ -181,6 +188,7 @@ function applyChildren(
       })
     );
   } else if (isObservable(children)) {
+    // TODO: Here be dragons
     return children.pipe(
       switchMap(child => {
         return applyChildren(child, parent, ctx) ?? of(void 0);
@@ -236,6 +244,8 @@ function produceElement(
       return element;
     }
     return combineLatest(observables).pipe(mapTo(element));
+  } else if (type === AktaPreparedComponent) {
+    return props.children as Observable<DOMNode>;
   } else if (typeof type === 'function') {
     const [element, dependencies] = callComponent(
       type,
@@ -253,8 +263,13 @@ function produceElement(
       });
       if (isObservable(output)) {
         return output.subscribe({
-          ...sub,
-          error: undefined,
+          next: val => {
+            sub.next(val);
+          },
+          error: val => {
+            sub.error(val);
+          },
+          complete: undefined,
         });
       }
       sub.next(output);
@@ -270,7 +285,7 @@ function isPromise(obj: unknown): obj is Promise<unknown> {
 }
 
 function produceElements(
-  node: AktaAllElements,
+  node: string | null | AktaAllElements,
   ctx: AktaContext
 ): Observable<DOMNode> | DOMNode {
   if (isObservable(node)) {
@@ -294,19 +309,24 @@ function produceElements(
   }
 }
 
-export function prepare(
-  element: AktaAllElements,
-  root: HTMLElement
-): Promise<void> {
+export function prepare(element: AktaElement): Promise<AktaNode> {
   const dependencies = dependecyContext.getContext();
   const ctx = {
     dependencies,
     intrinsic: new AllElements(),
   };
-  const rest = applyChildren(element, root, ctx);
-  return isObservable(rest)
-    ? firstValueFrom(rest.pipe(mapTo(void 0)))
-    : Promise.resolve();
+  const children = produceElement(element, ctx);
+  if (isObservable(children)) {
+    const subject = new ReplaySubject<DOMNode>(1);
+    const sub = children.subscribe(subject);
+    useTeardown(() => sub.unsubscribe());
+    return firstValueFrom(subject).then(() => {
+      return jsx(AktaPreparedComponent, { children: subject.asObservable() });
+    });
+  }
+  return Promise.resolve(
+    jsx(AktaPreparedComponent, { children: of(children) })
+  );
 }
 
 export function mount(element: AktaAllElements, root: HTMLElement) {

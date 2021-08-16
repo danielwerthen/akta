@@ -29,4 +29,12 @@ export function isAktaElement(node: unknown): node is AktaElement {
 
 export interface ElementProperties {}
 
-export type AktaComponent<PROPS extends {}> = (props: PROPS) => AktaAllElements;
+export type AktaComponent<PROPS extends {}> = (
+  props: PROPS
+) => AktaAllElements | string | null;
+
+export function AktaPreparedComponent(_props: {
+  children: Observable<HTMLElement>;
+}) {
+  return null;
+}

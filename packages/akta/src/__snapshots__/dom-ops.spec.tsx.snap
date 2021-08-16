@@ -42,6 +42,18 @@ exports[`DOM OPS mount and unmount is called at the right time 1`] = `
 </div>
 `;
 
+exports[`DOM OPS should handle observable child 1`] = `
+<div>
+  <p>
+    Daniel
+  </p>
+</div>
+`;
+
+exports[`DOM OPS should handle prepare 1`] = `<div />`;
+
+exports[`DOM OPS should handle prepare 2`] = `<div />`;
+
 exports[`DOM OPS should handle teardown 1`] = `
 <div>
   <div>

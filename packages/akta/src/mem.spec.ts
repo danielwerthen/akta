@@ -2,7 +2,7 @@ import { verify } from '../test/mem-verify';
 import { Subject } from 'rxjs';
 import { dependecyContext } from './dependencies';
 import { createDependencyMap } from './dependency-map';
-import { prepare } from './dom-ops';
+import { mount } from './dom-ops';
 import { jsx } from './jsx-runtime';
 
 describe('ObserveAsync', () => {
@@ -15,12 +15,11 @@ describe('ObserveAsync', () => {
       }
       const value = new Subject();
 
-      const promise = dependecyContext.setContext(
-        () => prepare(jsx('div', { children: value }), root),
+      dependecyContext.setContext(
+        () => mount(jsx('div', { children: value }), root),
         createDependencyMap()
       );
       value.next([jsx(Comp, {})]);
-      await promise;
       expect(root).toMatchSnapshot();
     })
   );
