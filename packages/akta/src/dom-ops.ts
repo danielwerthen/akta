@@ -7,7 +7,7 @@ import {
   of,
   ReplaySubject,
 } from 'rxjs';
-import { filter, map, mapTo, switchMap, tap } from 'rxjs/operators';
+import { filter, map, mapTo, switchMap } from 'rxjs/operators';
 import {
   continuationDependency,
   dependecyContext,
@@ -128,99 +128,64 @@ function applyChildren(
     parent.appendChild(document.createTextNode(children));
     return;
   }
-  if (Array.isArray(children)) {
-    let lineup: (HTMLElement | Text)[] | null = [];
-    const observables = children
-      .map((child: AktaAllElements, idx) => {
-        const item = produceElements(child, ctx);
-        if (isObservable(item)) {
-          return item.pipe(
-            map(newNode => {
-              if (lineup) {
-                lineup[idx] = newNode;
-              } else {
-                const oldNode = parent.childNodes[idx];
-                if (oldNode instanceof HTMLElement) {
-                  unmountElement(oldNode);
-                }
-                parent.childNodes[idx].replaceWith(newNode);
-                mountElement(newNode);
+  let lineup: (HTMLElement | Text)[] | null = [];
+  const observables = (Array.isArray(children) ? children : [children])
+    .map((child: AktaAllElements, idx) => {
+      const item = produceElements(child, ctx);
+      if (isObservable(item)) {
+        return item.pipe(
+          map(newNode => {
+            if (lineup) {
+              lineup[idx] = newNode;
+            } else {
+              const oldNode = parent.childNodes[idx];
+              if (oldNode instanceof HTMLElement) {
+                unmountElement(oldNode);
               }
-              return newNode;
-            }),
-            filter<HTMLElement | Text>(onlyFirst)
-          );
-        }
-        if (lineup) {
-          lineup[idx] = item;
-        } else {
-          parent.appendChild(item);
-          mountElement(item);
-        }
-        return;
-      })
-      .filter<Observable<DOMNode>>(
-        (item: unknown): item is Observable<DOMNode> => !!item
-      );
-    if (observables.length < 1) {
-      lineup.forEach(node => {
-        parent.appendChild(node);
-        mountElement(node);
-      });
-      lineup = null;
-      return;
-    }
-    return combineLatest(observables).pipe(
-      map(() => {
-        if (lineup) {
-          while (parent.firstChild) {
-            if (parent.firstChild instanceof HTMLElement) {
-              unmountElement(parent.firstChild);
+              parent.childNodes[idx].replaceWith(newNode);
+              mountElement(newNode);
             }
-            parent.firstChild.remove();
+            return newNode;
+          }),
+          filter<HTMLElement | Text>(onlyFirst)
+        );
+      }
+      if (lineup) {
+        lineup[idx] = item;
+      } else {
+        parent.appendChild(item);
+        mountElement(item);
+      }
+      return;
+    })
+    .filter<Observable<DOMNode>>(
+      (item: unknown): item is Observable<DOMNode> => !!item
+    );
+  if (observables.length < 1) {
+    lineup.forEach(node => {
+      parent.appendChild(node);
+      mountElement(node);
+    });
+    lineup = null;
+    return;
+  }
+  return combineLatest(observables).pipe(
+    map(() => {
+      if (lineup) {
+        while (parent.firstChild) {
+          if (parent.firstChild instanceof HTMLElement) {
+            unmountElement(parent.firstChild);
           }
-          lineup.forEach(node => {
-            parent.appendChild(node);
-            mountElement(node);
-          });
+          parent.firstChild.remove();
         }
-        lineup = null;
-      })
-    );
-  } else if (isObservable(children)) {
-    // TODO: Here be dragons
-    return children.pipe(
-      switchMap(child => {
-        return applyChildren(child, parent, ctx) ?? of(void 0);
-      })
-    );
-  }
-  const item = produceElements(children, ctx);
-  if (isObservable(item)) {
-    let oldNode: HTMLElement | Text;
-    return item.pipe(
-      tap(newNode => {
-        if (oldNode) {
-          parent.replaceChild(newNode, oldNode);
-          mountElement(newNode);
-          unmountElement(oldNode);
-        } else {
-          parent.appendChild(newNode);
-          mountElement(newNode);
-        }
-        oldNode = newNode;
-      }),
-      filter(onlyFirst)
-    );
-  }
-  while (parent.firstChild) {
-    if (parent.firstChild instanceof HTMLElement) {
-      unmountElement(parent.firstChild);
-    }
-    parent.firstChild.remove();
-  }
-  parent.appendChild(item);
-  mountElement(item);
+        lineup.forEach(node => {
+          parent.appendChild(node);
+          mountElement(node);
+        });
+      }
+      lineup = null;
+    })
+  );
 }
 
 function produceElement(

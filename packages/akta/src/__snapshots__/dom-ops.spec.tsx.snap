@@ -50,21 +50,29 @@ exports[`DOM OPS should handle observable child 1`] = `
 </div>
 `;
 
-exports[`DOM OPS should handle prepare 1`] = `<div />`;
+exports[`DOM OPS should handle prepare 1`] = `
+<div>
+  <p>
+    Loading
+  </p>
+</div>
+`;
 
-exports[`DOM OPS should handle prepare 2`] = `<div />`;
+exports[`DOM OPS should handle prepare 2`] = `
+<div>
+  <p>
+    <span>
+      Finally
+    </span>
+  </p>
+</div>
+`;
 
 exports[`DOM OPS should handle teardown 1`] = `
 <div>
   <div>
     <p>
-      Data
-    </p>
-    <p>
-      Data
-    </p>
-    <p>
-      Data
+      Data3
     </p>
   </div>
 </div>

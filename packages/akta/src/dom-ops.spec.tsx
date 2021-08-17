@@ -111,23 +111,23 @@ describe('DOM OPS', () => {
     const root = document.createElement('div');
     const value = new Subject<AktaNode>();
     const teardown = jest.fn();
-    function Comp() {
+    function Comp({ name }: { name: string }) {
       useTeardown(teardown);
-      return jsx('p', { children: 'Data' });
+      return jsx('p', { children: name });
     }
     const unsub = mount(jsx('div', { children: value }), root);
-    value.next(jsx(Comp, {}));
+    value.next(jsx(Comp, { name: 'Data' }));
     expect(teardown.mock.calls.length).toBe(0);
-    value.next(jsx(Comp, {}));
+    value.next(jsx(Comp, { name: 'Data2' }));
     expect(teardown.mock.calls.length).toBe(1);
-    value.next(jsx(Comp, {}));
+    value.next(jsx(Comp, { name: 'Data3' }));
     expect(teardown.mock.calls.length).toBe(2);
     unsub();
     expect(teardown.mock.calls.length).toBe(3);
     expect(root).toMatchSnapshot();
   });
 
-  it.only('should handle prepare', async () => {
+  it('should handle prepare', async () => {
     const root = document.createElement('div');
     const eventually = new Subject<AktaNode>();
     function Comp() {
@@ -140,7 +140,7 @@ describe('DOM OPS', () => {
     const unsub = mount(jsx(Comp, {}), root);
     await new Promise(res => setTimeout(res, 10));
     expect(root).toMatchSnapshot();
-    eventually.next('Finally2');
+    eventually.next('Finally');
     await new Promise(res => setTimeout(res, 10));
     unsub();
     expect(root).toMatchSnapshot();
