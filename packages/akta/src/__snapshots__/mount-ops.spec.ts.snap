@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`mount-ops should also work 1`] = `
+<div>
+  
+  test1
+  updated
+  injected
+  test3
+</div>
+`;
+
+exports[`mount-ops should work 1`] = `
+<div>
+  
+  danie
+  foobar
+  2test
+  bottom
+  foobar
+</div>
+`;
