@@ -274,13 +274,13 @@ function produceElements(
   }
 }
 
-export function prepare(element: AktaElement): Promise<AktaNode> {
+export function prepare(element: AktaAllElements): Promise<AktaNode> {
   const dependencies = dependecyContext.getContext();
   const ctx = {
     dependencies,
     intrinsic: new AllElements(),
   };
-  const children = produceElement(element, ctx);
+  const children = produceElements(element, ctx);
   if (isObservable(children)) {
     const subject = new ReplaySubject<DOMNode>(1);
     const sub = children.subscribe(subject);

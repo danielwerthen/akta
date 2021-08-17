@@ -2,7 +2,7 @@
 
 import * as CSS from "csstype";
 import { Observable, Subject } from 'rxjs';
-import { AktaElement, AktaAllElements } from "./src/types";
+import { AktaElement, AktaAllElements } from "./dist/types";
 
 export type HTMLAttributes<_T> = {
   [key: string]: unknown;
