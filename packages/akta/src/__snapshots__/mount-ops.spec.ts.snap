@@ -12,10 +12,8 @@ exports[`mount-ops should also work 1`] = `
 
 exports[`mount-ops should work 1`] = `
 <div>
-  
-  danie
-  foobar
-  2test
+  maker
+  final
   bottom
   foobar
 </div>

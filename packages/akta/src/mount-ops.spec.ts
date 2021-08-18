@@ -1,20 +1,23 @@
 import { from, interval, map, take } from 'rxjs';
-import { attach, attachChildren } from './mount-ops';
+import { attach, attachChildren, Attacher } from './mount-ops';
 
 describe('mount-ops', () => {
   it.only('should work', async () => {
     const root = document.createElement('div');
-    const sibling = document.createTextNode('');
-    root.appendChild(sibling);
 
     const child1 = interval(100).pipe(
       take(4),
-      map(id => (id > 2 ? ['danie', 'foobar'] : id + 'test'))
+      map(id => (id > 2 ? ['maker', 'final'] : id + 'test'))
     );
     const child2 = 'bottom';
     const child3 = from(['daniel', 'foobar']);
+    const child4 = from([['alpha', 'beta'], 'foobar', ['zeta', 'tau']]);
 
-    const sub = attachChildren(() => sibling, [child1, child2, child3]);
+    const attacher = new Attacher(
+      () => null,
+      () => root
+    );
+    const sub = attachChildren(attacher, [child1, child2, child3, child4]);
     if (sub) {
       sub.subscribe({
         error: console.error,
