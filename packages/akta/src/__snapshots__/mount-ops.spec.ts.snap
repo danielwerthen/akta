@@ -16,5 +16,7 @@ exports[`mount-ops should work 1`] = `
   final
   bottom
   foobar
+  zeta
+  tau
 </div>
 `;

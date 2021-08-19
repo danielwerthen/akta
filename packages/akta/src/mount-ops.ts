@@ -86,7 +86,7 @@ export class Attacher {
   }
   activate() {
     if (this.activator) {
-      this.activator.subscribe(() => this._activate());
+      this.activator.subscribe({ complete: () => this._activate() });
     } else {
       this._activate();
     }
