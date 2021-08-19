@@ -13,7 +13,7 @@ type TempNode = null | string | TempNode[] | Observable<TempNode>;
 
 export class Attacher {
   private live: boolean = false;
-  private nodes: ChildNode[] = [];
+  private nodes: (ChildNode | Attacher)[] = [];
   private sibling: () => ChildNode | null;
   private parent: () => ChildNode;
   private activator: Subject<void> | undefined;
@@ -31,19 +31,24 @@ export class Attacher {
     });
   }
   remove(idx: number) {
-    if (this.live && this.nodes[idx]) {
-      this.nodes[idx].remove();
+    if (this.nodes[idx]) {
+      const node = this.nodes[idx];
+      if (node instanceof Attacher) {
+        node.teardown();
+      } else if (this.live) {
+        node.remove();
+      }
     }
     delete this.nodes[idx];
   }
   attach(node: ChildNode, idx: number) {
-    if (this.live && this.nodes[idx]) {
-      this.nodes[idx].remove();
-    }
+    this.remove(idx);
     this.nodes[idx] = node;
     if (this.live) {
       const sib = this.nodes[idx - 1] ?? this.sibling();
-      if (sib) {
+      if (sib instanceof Attacher) {
+        sib.appendAfter(node);
+      } else if (sib) {
         if (!sib.parentNode) {
           throw new Error('Activation out of order');
         }
@@ -58,15 +63,45 @@ export class Attacher {
       }
     }
   }
+  private appendAfter(node: ChildNode) {
+    if (this.live) {
+      const item = this.nodes[this.nodes.length];
+      if (item instanceof Attacher) {
+        item.appendAfter(node);
+      } else {
+        item.after(node);
+      }
+    } else {
+      const sib = this.sibling();
+      if (sib) {
+        sib.after(node);
+      }
+      const root = this.parent();
+      root.appendChild(node);
+    }
+  }
+  private getLastNode(): ChildNode | null {
+    if (this.live) {
+      const item = this.nodes[this.nodes.length];
+      if (item instanceof Attacher) {
+        return item.getLastNode();
+      } else {
+        return item;
+      }
+    }
+    return this.sibling();
+  }
   private _activate() {
     this.live = true;
     for (let i = 0; i < this.nodes.length; i++) {
       const node = this.nodes[i];
-      if (!node) {
+      if (!node || node instanceof Attacher) {
         continue;
       }
       const sib = this.nodes[i - 1] ?? this.sibling();
-      if (sib) {
+      if (sib instanceof Attacher) {
+        sib.appendAfter(node);
+      } else if (sib) {
         if (!sib.parentNode) {
           throw new Error('Activation out of order');
         }
@@ -92,18 +127,34 @@ export class Attacher {
     }
   }
   branch(idx: number): Attacher {
+    this.remove(idx);
     const activator = new Subject<void>();
     this.activators.push(activator);
-    return new Attacher(
-      () => this.nodes[idx - 1],
+    return (this.nodes[idx] = new Attacher(
+      () => {
+        for (let i = idx - 1; i >= 0; i++) {
+          const node = this.nodes[i];
+          if (node instanceof Attacher) {
+            const sib = node.getLastNode();
+            if (sib) {
+              return sib;
+            }
+            continue;
+          }
+          return node;
+        }
+        return null;
+      },
       this.parent,
       this.live ? undefined : activator
-    );
+    ));
   }
   teardown() {
-    let node: ChildNode | undefined;
+    let node: ChildNode | Attacher | undefined;
     while ((node = this.nodes.pop())) {
-      if (this.live) {
+      if (node instanceof Attacher) {
+        node.teardown();
+      } else if (this.live) {
         node.remove();
       }
     }
@@ -135,29 +186,15 @@ export function attachChildren(
       .filter<Observable<unknown>>(
         (item: unknown): item is Observable<unknown> => !!item
       );
-    return new Observable(sub => {
-      sub.add(() => branch.teardown());
-
-      if (observables.length < 1) {
-        if (typeof index === 'number') {
-          attacher.remove(index);
-        }
+    if (observables.length < 1) {
+      branch.activate();
+      return;
+    }
+    return combineLatest(observables).pipe(
+      tap(() => {
         branch.activate();
-        sub.next();
-        return;
-      }
-      return combineLatest(observables)
-        .pipe(
-          tap(() => {
-            if (typeof index === 'number') {
-              attacher.remove(index);
-            }
-            branch.activate();
-            sub.next();
-          })
-        )
-        .subscribe();
-    });
+      })
+    );
   } else if (isObservable(children)) {
     return children.pipe(
       switchMap(child => {

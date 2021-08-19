@@ -3,7 +3,6 @@
 exports[`mount-ops should also work 1`] = `
 <div>
   test1
-  injected
   updated
   test3
 </div>
@@ -14,7 +13,7 @@ exports[`mount-ops should work 1`] = `
   maker
   final
   bottom
-  foobar
+  
   zeta
   tau
 </div>
