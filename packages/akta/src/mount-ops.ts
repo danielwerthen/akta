@@ -110,53 +110,6 @@ export class Attacher {
   }
 }
 
-export function* attach(sibling: () => ChildNode) {
-  let lineup: ChildNode[] = [];
-  let active = false;
-  let yieldData: null | (() => ChildNode) = null;
-  while (true) {
-    const action:
-      | 'activate'
-      | [ChildNode, number]
-      | 'teardown'
-      | number = yield yieldData;
-    yieldData = null;
-    if (action === 'activate') {
-      if (active) {
-        throw new Error('Activate can only be triggered once');
-      }
-      active = true;
-      for (let i = 0; i < lineup.length; i++) {
-        const sib = lineup[i - 1] ?? sibling();
-        if (!sib.parentNode) {
-          throw new Error('Activation out of order');
-        }
-        sib.after(lineup[i]);
-      }
-    } else if (Array.isArray(action)) {
-      const [node, idx] = action;
-      if (active && lineup[idx]) {
-        lineup[idx].remove();
-      }
-      lineup[idx] = node;
-      if (active) {
-        const sib = lineup[idx - 1] ?? sibling();
-        if (!sib.parentNode) {
-          throw new Error('Activation out of order');
-        }
-        sib.after(node);
-      }
-    } else if (action === 'teardown') {
-      for (let i = 0; i < lineup.length; i++) {
-        lineup[i].remove();
-      }
-      break;
-    } else if (typeof action === 'number') {
-      const idx: number = action;
-      yieldData = () => lineup[idx - 1] ?? sibling();
-    }
-  }
-}
 function onlyFirst(_value: unknown, idx: number) {
   return idx === 0;
 }

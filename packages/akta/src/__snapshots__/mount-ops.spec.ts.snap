@@ -2,10 +2,9 @@
 
 exports[`mount-ops should also work 1`] = `
 <div>
-  
   test1
-  updated
   injected
+  updated
   test3
 </div>
 `;

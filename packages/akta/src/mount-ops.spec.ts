@@ -1,5 +1,5 @@
 import { from, interval, map, take } from 'rxjs';
-import { attach, attachChildren, Attacher } from './mount-ops';
+import { attachChildren, Attacher } from './mount-ops';
 
 describe('mount-ops', () => {
   it.only('should work', async () => {
@@ -26,25 +26,20 @@ describe('mount-ops', () => {
     await new Promise(res => setTimeout(res, 1000));
     expect(root).toMatchSnapshot();
   });
-  it('should also work', () => {
+  it.only('should also work', () => {
     const root = document.createElement('div');
-    const sibling = document.createTextNode('');
-    root.appendChild(sibling);
-    const gen = attach(() => sibling);
-    gen.next();
-    gen.next([document.createTextNode('test1'), 0]);
-    gen.next([document.createTextNode('test2'), 1]);
-    const { value } = gen.next(1);
-    if (!value) {
-      throw new Error('Invalid state');
-    }
-    const gen2 = attach(value);
-    gen2.next();
-    gen2.next([document.createTextNode('injected'), 0]);
-    gen.next([document.createTextNode('test3'), 2]);
-    gen.next('activate');
-    gen.next([document.createTextNode('updated'), 1]);
-    gen2.next('activate');
+    const gen = new Attacher(
+      () => null,
+      () => root
+    );
+    gen.attach(document.createTextNode('test1'), 0);
+    gen.attach(document.createTextNode('test2'), 1);
+    const gen2 = gen.branch(1);
+    gen2.attach(document.createTextNode('injected'), 0);
+    gen.attach(document.createTextNode('test3'), 2);
+    gen.activate();
+    gen.attach(document.createTextNode('updated'), 1);
+    gen2.activate();
     expect(root).toMatchSnapshot();
   });
 });
