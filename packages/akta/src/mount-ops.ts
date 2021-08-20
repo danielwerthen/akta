@@ -8,6 +8,9 @@ import {
   of,
   Subject,
 } from 'rxjs';
+import { DependencyMap } from './dependency-map';
+import { produceElement } from './dom-ops';
+import { mountElement, unmountElement } from './element-ops';
 import { AktaNode, isAktaElement } from './types';
 
 export class Attacher {
@@ -35,6 +38,7 @@ export class Attacher {
       if (node instanceof Attacher) {
         node.teardown();
       } else if (this.live) {
+        unmountElement(node);
         node.remove();
       }
     }
@@ -45,6 +49,7 @@ export class Attacher {
     this.nodes[idx] = node;
     if (this.live) {
       const sib = this.nodes[idx - 1] ?? this.sibling();
+      mountElement(node);
       if (sib instanceof Attacher) {
         sib.appendAfter(node);
       } else if (sib) {
@@ -167,46 +172,71 @@ function onlyFirst(_value: unknown, idx: number) {
 export function attachChildren(
   root: HTMLElement | Attacher,
   item: AktaNode,
+  deps: DependencyMap,
   index?: number
 ): Observable<unknown> | void {
+  let returnValue: Observable<unknown> | void = void 0;
   const attacher =
     root instanceof Attacher ? root : new Attacher(() => null, root);
-  if (!item) {
-    const node = document.createTextNode('');
-    attacher.attach(node, index ?? 0);
-  } else if (typeof item === 'string') {
-    const node = document.createTextNode(item);
-    attacher.attach(node, index ?? 0);
-  } else if (Array.isArray(item)) {
-    const branch =
-      typeof index === 'number' ? attacher.branch(index) : attacher;
-    const observables = item
-      .map((child, idx) => {
-        return attachChildren(branch, child, idx);
-      })
-      .filter<Observable<unknown>>(
-        (item: unknown): item is Observable<unknown> => !!item
-      );
-    if (observables.length < 1) {
-      branch.activate();
-      return;
-    }
-    return combineLatest(observables).pipe(
-      tap(() => {
+  try {
+    if (!item) {
+      const node = document.createTextNode('');
+      attacher.attach(node, index ?? 0);
+    } else if (typeof item === 'string') {
+      const node = document.createTextNode(item);
+      attacher.attach(node, index ?? 0);
+    } else if (Array.isArray(item)) {
+      const branch =
+        typeof index === 'number' ? attacher.branch(index) : attacher;
+      const observables = item
+        .map((child, idx) => {
+          return attachChildren(branch, child, deps, idx);
+        })
+        .filter<Observable<unknown>>(
+          (item: unknown): item is Observable<unknown> => !!item
+        );
+      if (observables.length < 1) {
         branch.activate();
-      })
-    );
-  } else if (isObservable(item)) {
-    return item.pipe(
-      switchMap(child => {
-        const obs = attachChildren(attacher, child, index);
-        if (!obs) {
-          return of(void 0);
-        }
-        return obs;
-      }),
-      filter(onlyFirst)
-    );
-  } else if (isAktaElement(item)) {
+        return;
+      }
+      return (returnValue = combineLatest(observables).pipe(
+        tap(() => {
+          branch.activate();
+        })
+      ));
+    } else if (isObservable(item)) {
+      return (returnValue = item.pipe(
+        switchMap(child => {
+          const obs = attachChildren(attacher, child, deps, index);
+          if (!obs) {
+            return of(void 0);
+          }
+          return obs;
+        }),
+        filter(onlyFirst)
+      ));
+    } else if (isAktaElement(item)) {
+      const obs = produceElement(item, deps);
+      if (isObservable(obs)) {
+        return (returnValue = obs.pipe(
+          tap(child => {
+            attacher.attach(child, index ?? 0);
+          }),
+          filter(onlyFirst)
+        ));
+      } else {
+        attacher.attach(obs, index ?? 0);
+      }
+    } else {
+      throw new Error('Invalid element error');
+    }
+  } finally {
+    if (!returnValue) {
+      if (attacher !== root) {
+        attacher.activate();
+      }
+    } else {
+      return returnValue.pipe(tap(() => attacher.activate()));
+    }
   }
 }

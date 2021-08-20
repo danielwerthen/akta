@@ -1,3 +1,4 @@
+import { mount } from './index';
 import {
   BehaviorSubject,
   firstValueFrom,
@@ -8,7 +9,7 @@ import {
   toArray,
 } from 'rxjs';
 import { useTeardown } from './dependencies';
-import { mount, prepare } from './dom-ops';
+import { prepare } from './dom-ops';
 import { jsx } from './jsx-runtime';
 import { AktaNode } from './types';
 
@@ -68,6 +69,8 @@ describe('DOM OPS', () => {
     const onUnmount = new Subject<unknown>();
     const mounts = firstValueFrom(onMount.pipe(toArray()));
     const unmounts = firstValueFrom(onUnmount.pipe(toArray()));
+    value.next(jsx('div', { children: 'final' }));
+    await new Promise(res => setTimeout(res, 10));
     value.next(jsx('div', { onMount, onUnmount, children: 'first' }));
     await new Promise(res => setTimeout(res, 10));
     value.next(jsx('div', { children: 'final' }));
@@ -88,6 +91,8 @@ describe('DOM OPS', () => {
     const onUnmount = new Subject<unknown>();
     const mounts = firstValueFrom(onMount.pipe(toArray()));
     const unmounts = firstValueFrom(onUnmount.pipe(toArray()));
+    value.next(jsx('div', { children: 'final' }));
+    await new Promise(res => setTimeout(res, 10));
     value.next(
       jsx('div', {
         children: jsx('div', {

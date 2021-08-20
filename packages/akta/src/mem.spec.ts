@@ -2,7 +2,7 @@ import { verify } from '../test/mem-verify';
 import { Subject } from 'rxjs';
 import { dependecyContext } from './dependencies';
 import { createDependencyMap } from './dependency-map';
-import { mount } from './dom-ops';
+import { mount } from './';
 import { jsx } from './jsx-runtime';
 
 describe('ObserveAsync', () => {

@@ -1,4 +1,5 @@
 import { from, interval, map, Observable, take } from 'rxjs';
+import { createDependencyMap } from './dependency-map';
 import { attachChildren, Attacher } from './mount-ops';
 
 describe('mount-ops', () => {
@@ -17,7 +18,11 @@ describe('mount-ops', () => {
     const child3 = from(['daniel', null]);
     const child4 = from([['alpha', 'beta'], observable, ['zeta', 'tau']]);
 
-    const sub = attachChildren(root, [child1, child2, child3, child4]);
+    const sub = attachChildren(
+      root,
+      [child1, child2, child3, child4],
+      createDependencyMap()
+    );
     if (sub) {
       sub.subscribe({
         error: console.error,

@@ -15,10 +15,11 @@ import {
   teardownDependency,
   useTeardown,
 } from './dependencies';
-import { createDependencyMap, DependencyMap } from './dependency-map';
-import { mountElement, unmountElement } from './element-ops';
+import { DependencyMap } from './dependency-map';
+// TODO: import { mountElement, unmountElement } from './element-ops';
 import { jsx } from './jsx-runtime';
 import { lazy } from './lazy-function';
+import { attachChildren } from './mount-ops';
 import {
   AktaComponent,
   AktaElement,
@@ -100,78 +101,7 @@ export function callComponent<PROPS>(
   return [element, deps];
 }
 
-function applyChildren(
-  children: AktaNode,
-  parent: HTMLElement,
-  deps: DependencyMap
-): Observable<unknown> | void {
-  if (!children) {
-    return;
-  } else if (typeof children === 'string') {
-    parent.appendChild(document.createTextNode(children));
-    return;
-  }
-  let lineup: ChildNode[] | null = [];
-  const observables = (Array.isArray(children) ? children : [children])
-    .map((child: AktaNode, idx) => {
-      const item = produceElements(child, deps);
-      if (isObservable(item)) {
-        return item.pipe(
-          map(newNode => {
-            if (lineup) {
-              lineup[idx] = newNode;
-            } else {
-              const oldNode = parent.childNodes[idx];
-              if (oldNode instanceof HTMLElement) {
-                unmountElement(oldNode);
-              }
-              parent.childNodes[idx].replaceWith(newNode);
-              mountElement(newNode);
-            }
-            return newNode;
-          }),
-          filter<ChildNode>(onlyFirst)
-        );
-      }
-      if (lineup) {
-        lineup[idx] = item;
-      } else {
-        parent.appendChild(item);
-        mountElement(item);
-      }
-      return;
-    })
-    .filter<Observable<ChildNode>>(
-      (item: unknown): item is Observable<ChildNode> => !!item
-    );
-  if (observables.length < 1) {
-    lineup.forEach(node => {
-      parent.appendChild(node);
-      mountElement(node);
-    });
-    lineup = null;
-    return;
-  }
-  return combineLatest(observables).pipe(
-    map(() => {
-      if (lineup) {
-        while (parent.firstChild) {
-          if (parent.firstChild instanceof HTMLElement) {
-            unmountElement(parent.firstChild);
-          }
-          parent.firstChild.remove();
-        }
-        lineup.forEach(node => {
-          parent.appendChild(node);
-          mountElement(node);
-        });
-      }
-      lineup = null;
-    })
-  );
-}
-
-function produceElement(
+export function produceElement(
   node: AktaElement,
   deps: DependencyMap
 ): Observable<ChildNode> | ChildNode {
@@ -184,7 +114,7 @@ function produceElement(
     for (var key in props) {
       const observable =
         key === 'children'
-          ? applyChildren(props[key] as AktaNode, element, deps)
+          ? attachChildren(element, props[key] as AktaNode, deps)
           : elements[type][key](element, props[key]);
       if (observable) {
         observables.push(observable.pipe(filter(onlyFirst)));
@@ -270,13 +200,4 @@ export function prepare(element: AktaNode): Promise<AktaNode> {
   return Promise.resolve(
     jsx(AktaPreparedComponent, { children: of(children) })
   );
-}
-
-export function mount(element: AktaNode, root: HTMLElement) {
-  const rest = applyChildren(element, root, createDependencyMap());
-  if (isObservable(rest)) {
-    const sub = rest.subscribe();
-    return () => sub.unsubscribe();
-  }
-  return () => void 0;
 }
