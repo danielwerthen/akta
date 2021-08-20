@@ -1,17 +1,20 @@
 import { BehaviorSubject, firstValueFrom, Subject, switchMap } from 'rxjs';
 import { createDependency, DependencyMap } from './dependency-map';
-import { isEvent } from './element-ops';
+import { AllElements, isEvent } from './element-ops';
 import { lazy } from './lazy-function';
 import MetaObject, { MethodMissing } from './meta-object';
 import { createSyncContext } from './sync-context';
 import { AktaNode, ElementProperties } from './types';
 
 export const dependecyContext = createSyncContext<DependencyMap>();
+
 export const continuationDependency = createDependency(lazy());
 export type TeardownFunction = () => void;
 export const teardownDependency = createDependency<null | TeardownFunction[]>(
   null
 );
+
+export const elementsDependency = createDependency(new AllElements());
 
 export function useNext<T extends AktaNode, RETURN extends AktaNode, NEXT>(
   _input?: () => Generator<T, RETURN, NEXT> | AsyncGenerator<T, RETURN, NEXT>

@@ -18,14 +18,14 @@ type AktaMountable<T> = T & {
 };
 
 const empty = {};
-export function mountElement<T extends HTMLElement | Text>(element: T) {
+export function mountElement<T extends ChildNode>(element: T) {
   const mount = ((element ?? empty) as AktaMountable<T>)[AKTA_MOUNT];
   if (mount) {
     mount.next(element);
   }
 }
 
-export function unmountElement<T extends HTMLElement | Text>(element: T) {
+export function unmountElement<T extends ChildNode>(element: T) {
   if (element instanceof HTMLElement) {
     for (let i = 0; i < element.children.length; i++) {
       const child = element.children[i];

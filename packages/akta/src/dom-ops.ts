@@ -11,11 +11,12 @@ import { filter, map, mapTo, switchMap } from 'rxjs/operators';
 import {
   continuationDependency,
   dependecyContext,
+  elementsDependency,
   teardownDependency,
   useTeardown,
 } from './dependencies';
 import { createDependencyMap, DependencyMap } from './dependency-map';
-import { AllElements, mountElement, unmountElement } from './element-ops';
+import { mountElement, unmountElement } from './element-ops';
 import { jsx } from './jsx-runtime';
 import { lazy } from './lazy-function';
 import {
@@ -25,23 +26,6 @@ import {
   AktaPreparedComponent,
   isAktaElement,
 } from './types';
-
-type AktaContext = {
-  intrinsic: AllElements;
-  dependencies: DependencyMap;
-};
-
-type DOMNode = HTMLElement | Text;
-
-function applyProp(
-  element: HTMLElement,
-  type: string,
-  key: string,
-  value: unknown,
-  ctx: AktaContext
-): Observable<unknown> | void {
-  return ctx.intrinsic[type][key](element, value);
-}
 
 function onlyFirst(_value: unknown, idx: number) {
   return idx === 0;
@@ -119,7 +103,7 @@ export function callComponent<PROPS>(
 function applyChildren(
   children: AktaNode,
   parent: HTMLElement,
-  ctx: AktaContext
+  deps: DependencyMap
 ): Observable<unknown> | void {
   if (!children) {
     return;
@@ -127,10 +111,10 @@ function applyChildren(
     parent.appendChild(document.createTextNode(children));
     return;
   }
-  let lineup: (HTMLElement | Text)[] | null = [];
+  let lineup: ChildNode[] | null = [];
   const observables = (Array.isArray(children) ? children : [children])
     .map((child: AktaNode, idx) => {
-      const item = produceElements(child, ctx);
+      const item = produceElements(child, deps);
       if (isObservable(item)) {
         return item.pipe(
           map(newNode => {
@@ -146,7 +130,7 @@ function applyChildren(
             }
             return newNode;
           }),
-          filter<HTMLElement | Text>(onlyFirst)
+          filter<ChildNode>(onlyFirst)
         );
       }
       if (lineup) {
@@ -157,8 +141,8 @@ function applyChildren(
       }
       return;
     })
-    .filter<Observable<DOMNode>>(
-      (item: unknown): item is Observable<DOMNode> => !!item
+    .filter<Observable<ChildNode>>(
+      (item: unknown): item is Observable<ChildNode> => !!item
     );
   if (observables.length < 1) {
     lineup.forEach(node => {
@@ -189,17 +173,19 @@ function applyChildren(
 
 function produceElement(
   node: AktaElement,
-  ctx: AktaContext
-): Observable<DOMNode> | DOMNode {
+  deps: DependencyMap
+): Observable<ChildNode> | ChildNode {
   const { type, props } = node;
   if (typeof type === 'string') {
     const element = document.createElement(type);
     const observables: Observable<unknown>[] = [];
+
+    const elements = deps.get(elementsDependency);
     for (var key in props) {
       const observable =
         key === 'children'
-          ? applyChildren(props[key] as AktaNode, element, ctx)
-          : applyProp(element, type, key, props[key], ctx);
+          ? applyChildren(props[key] as AktaNode, element, deps)
+          : elements[type][key](element, props[key]);
       if (observable) {
         observables.push(observable.pipe(filter(onlyFirst)));
       }
@@ -209,18 +195,14 @@ function produceElement(
     }
     return combineLatest(observables).pipe(mapTo(element));
   } else if (type === AktaPreparedComponent) {
-    return props.children as Observable<DOMNode>;
+    return props.children as Observable<ChildNode>;
   } else if (typeof type === 'function') {
-    const [element, dependencies] = callComponent(
-      type,
-      props,
-      ctx.dependencies
-    );
+    const [element, nextDeps] = callComponent(type, props, deps);
 
-    const output = produceElements(element, { ...ctx, dependencies });
+    const output = produceElements(element, nextDeps);
     return new Observable(sub => {
       sub.add(() => {
-        const fns = dependencies.get(teardownDependency);
+        const fns = nextDeps.get(teardownDependency);
         if (fns) {
           fns.forEach(item => item());
         }
@@ -250,24 +232,24 @@ function isPromise(obj: unknown): obj is Promise<unknown> {
 
 function produceElements(
   node: AktaNode,
-  ctx: AktaContext
-): Observable<DOMNode> | DOMNode {
+  deps: DependencyMap
+): Observable<ChildNode> | ChildNode {
   if (isObservable(node)) {
     return node.pipe(
       switchMap(innerNode => {
-        const item = produceElements(innerNode, ctx);
+        const item = produceElements(innerNode, deps);
         return isObservable(item) ? item : of(item);
       })
     );
   } else if (isPromise(node)) {
     return from(node).pipe(
       switchMap((innerNode: AktaNode) => {
-        const item = produceElements(innerNode, ctx);
+        const item = produceElements(innerNode, deps);
         return isObservable(item) ? item : of(item);
       })
     );
   } else if (isAktaElement(node)) {
-    return produceElement(node, ctx);
+    return produceElement(node, deps);
   } else {
     return document.createTextNode(node ? node.toString() : '');
   }
@@ -275,13 +257,10 @@ function produceElements(
 
 export function prepare(element: AktaNode): Promise<AktaNode> {
   const dependencies = dependecyContext.getContext();
-  const ctx = {
-    dependencies,
-    intrinsic: new AllElements(),
-  };
-  const children = produceElements(element, ctx);
+
+  const children = produceElements(element, dependencies);
   if (isObservable(children)) {
-    const subject = new ReplaySubject<DOMNode>(1);
+    const subject = new ReplaySubject<ChildNode>(1);
     const sub = children.subscribe(subject);
     useTeardown(() => sub.unsubscribe());
     return firstValueFrom(subject).then(() => {
@@ -294,11 +273,7 @@ export function prepare(element: AktaNode): Promise<AktaNode> {
 }
 
 export function mount(element: AktaNode, root: HTMLElement) {
-  const ctx = {
-    dependencies: createDependencyMap(),
-    intrinsic: new AllElements(),
-  };
-  const rest = applyChildren(element, root, ctx);
+  const rest = applyChildren(element, root, createDependencyMap());
   if (isObservable(rest)) {
     const sub = rest.subscribe();
     return () => sub.unsubscribe();

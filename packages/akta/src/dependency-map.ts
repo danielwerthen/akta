@@ -9,7 +9,7 @@ export type Dependency<T> = {
 export type DependencyMap = {
   <T>(dep: Dependency<T>): Observable<T>;
   use<T>(dep: Dependency<T>): Observable<T>;
-  get<T>(dep: Dependency<T>): T | null;
+  get<T>(dep: Dependency<T>): T;
   provide<T>(dep: Dependency<T>, value: T | ((old?: T) => T)): void;
   branch(): DependencyMap;
 };
@@ -51,7 +51,7 @@ export function createDependencyMap(parent?: DependencyMap): DependencyMap {
   map.use = dep => {
     return parent ? parent(dep) : of(dep.value);
   };
-  map.get = <T>(dep: Dependency<T>) => {
+  map.get = <T>(dep: Dependency<T>): T => {
     const local = store.get(dep.key)?.value as T;
     if (!local || (local as unknown) === LocalStop) {
       const parVal = parent?.get(dep) as T;
