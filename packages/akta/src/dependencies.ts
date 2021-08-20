@@ -4,7 +4,7 @@ import { isEvent } from './element-ops';
 import { lazy } from './lazy-function';
 import MetaObject, { MethodMissing } from './meta-object';
 import { createSyncContext } from './sync-context';
-import { AktaAllElements, ElementProperties } from './types';
+import { AktaNode, ElementProperties } from './types';
 
 export const dependecyContext = createSyncContext<DependencyMap>();
 export const continuationDependency = createDependency(lazy());
@@ -13,11 +13,7 @@ export const teardownDependency = createDependency<null | TeardownFunction[]>(
   null
 );
 
-export function useNext<
-  T extends AktaAllElements,
-  RETURN extends AktaAllElements,
-  NEXT
->(
+export function useNext<T extends AktaNode, RETURN extends AktaNode, NEXT>(
   _input?: () => Generator<T, RETURN, NEXT> | AsyncGenerator<T, RETURN, NEXT>
 ): (input: NEXT) => Promise<void> {
   const ctx = dependecyContext.getContext();

@@ -9,14 +9,14 @@ export type AktaElement<
   key: string | undefined;
 };
 
-export type ObservableElements =
-  | Observable<AktaAllElements>
-  | Generator<AktaAllElements, AktaAllElements>
-  | AsyncGenerator<AktaAllElements, AktaAllElements>;
-
-export type AktaAllElements = AktaElement | ObservableElements;
-
-export type AktaNode = AktaAllElements | string | null | AktaNode[];
+export type AktaNode =
+  | Observable<AktaNode>
+  | AktaElement
+  | Generator<AktaNode, AktaNode>
+  | AsyncGenerator<AktaNode, AktaNode>
+  | string
+  | null
+  | AktaNode[];
 
 export const AktaElementType = Symbol('Akta element');
 
@@ -29,9 +29,7 @@ export function isAktaElement(node: unknown): node is AktaElement {
 
 export interface ElementProperties {}
 
-export type AktaComponent<PROPS extends {}> = (
-  props: PROPS
-) => AktaAllElements | string | null;
+export type AktaComponent<PROPS extends {}> = (props: PROPS) => AktaNode;
 
 export function AktaPreparedComponent(_props: {
   children: Observable<HTMLElement>;

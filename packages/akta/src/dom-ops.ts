@@ -19,7 +19,6 @@ import { AllElements, mountElement, unmountElement } from './element-ops';
 import { jsx } from './jsx-runtime';
 import { lazy } from './lazy-function';
 import {
-  AktaAllElements,
   AktaComponent,
   AktaElement,
   AktaNode,
@@ -81,7 +80,7 @@ export function callComponent<PROPS>(
     const generated = dependecyContext.setContext(() => {
       return element.next();
     }, deps);
-    const observable = new Observable<AktaAllElements>(subscriber => {
+    const observable = new Observable<AktaNode>(subscriber => {
       Promise.resolve(generated).then(({ value, done }) => {
         subscriber.next(value);
         if (done) {
@@ -130,7 +129,7 @@ function applyChildren(
   }
   let lineup: (HTMLElement | Text)[] | null = [];
   const observables = (Array.isArray(children) ? children : [children])
-    .map((child: AktaAllElements, idx) => {
+    .map((child: AktaNode, idx) => {
       const item = produceElements(child, ctx);
       if (isObservable(item)) {
         return item.pipe(
@@ -199,7 +198,7 @@ function produceElement(
     for (var key in props) {
       const observable =
         key === 'children'
-          ? applyChildren(props[key] as AktaAllElements, element, ctx)
+          ? applyChildren(props[key] as AktaNode, element, ctx)
           : applyProp(element, type, key, props[key], ctx);
       if (observable) {
         observables.push(observable.pipe(filter(onlyFirst)));
@@ -250,7 +249,7 @@ function isPromise(obj: unknown): obj is Promise<unknown> {
 }
 
 function produceElements(
-  node: string | null | AktaAllElements,
+  node: AktaNode,
   ctx: AktaContext
 ): Observable<DOMNode> | DOMNode {
   if (isObservable(node)) {
@@ -262,7 +261,7 @@ function produceElements(
     );
   } else if (isPromise(node)) {
     return from(node).pipe(
-      switchMap((innerNode: AktaAllElements) => {
+      switchMap((innerNode: AktaNode) => {
         const item = produceElements(innerNode, ctx);
         return isObservable(item) ? item : of(item);
       })
@@ -274,7 +273,7 @@ function produceElements(
   }
 }
 
-export function prepare(element: AktaAllElements): Promise<AktaNode> {
+export function prepare(element: AktaNode): Promise<AktaNode> {
   const dependencies = dependecyContext.getContext();
   const ctx = {
     dependencies,
@@ -294,7 +293,7 @@ export function prepare(element: AktaAllElements): Promise<AktaNode> {
   );
 }
 
-export function mount(element: AktaAllElements, root: HTMLElement) {
+export function mount(element: AktaNode, root: HTMLElement) {
   const ctx = {
     dependencies: createDependencyMap(),
     intrinsic: new AllElements(),

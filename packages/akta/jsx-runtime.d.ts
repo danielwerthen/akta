@@ -2,7 +2,7 @@
 
 import * as CSS from "csstype";
 import { Observable, Subject } from 'rxjs';
-import { AktaElement, AktaAllElements } from "./dist/types";
+import { AktaElement, AktaNode } from "./dist/types";
 
 export type HTMLAttributes<_T> = {
   [key: string]: unknown;
@@ -2085,7 +2085,7 @@ type Key = string;
 
 declare global {
   namespace JSX {
-    type Element = AktaAllElements;
+    type Element = AktaNode;
     interface ElementClass {
       render(): AktaElement;
     }

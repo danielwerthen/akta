@@ -17,11 +17,7 @@ describe('mount-ops', () => {
     const child3 = from(['daniel', null]);
     const child4 = from([['alpha', 'beta'], observable, ['zeta', 'tau']]);
 
-    const attacher = new Attacher(
-      () => null,
-      () => root
-    );
-    const sub = attachChildren(attacher, [child1, child2, child3, child4]);
+    const sub = attachChildren(root, [child1, child2, child3, child4]);
     if (sub) {
       sub.subscribe({
         error: console.error,
@@ -33,10 +29,7 @@ describe('mount-ops', () => {
   });
   it('should also work', () => {
     const root = document.createElement('div');
-    const gen = new Attacher(
-      () => null,
-      () => root
-    );
+    const gen = new Attacher(() => null, root);
     gen.attach(document.createTextNode('test1'), 0);
     gen.attach(document.createTextNode('test2'), 1);
     const gen2 = gen.branch(1);

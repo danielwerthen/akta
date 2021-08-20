@@ -8,19 +8,18 @@ import {
   of,
   Subject,
 } from 'rxjs';
-
-type TempNode = null | string | TempNode[] | Observable<TempNode>;
+import { AktaNode, isAktaElement } from './types';
 
 export class Attacher {
   private live: boolean = false;
   private nodes: (ChildNode | Attacher)[] = [];
   private sibling: () => ChildNode | null;
-  private parent: () => ChildNode;
+  private parent: HTMLElement;
   private activator: Subject<void> | undefined;
   private activators: Subject<void>[] = [];
   constructor(
     sibling: () => ChildNode | null,
-    parent: () => ChildNode,
+    parent: HTMLElement,
     activator?: Subject<void>
   ) {
     this.sibling = sibling;
@@ -54,7 +53,7 @@ export class Attacher {
         }
         sib.after(node);
       } else {
-        const p = this.parent();
+        const p = this.parent;
         if (p.childNodes.length > 0) {
           p.firstChild?.before(node);
         } else {
@@ -76,7 +75,7 @@ export class Attacher {
       if (sib) {
         sib.after(node);
       }
-      const root = this.parent();
+      const root = this.parent;
       root.appendChild(node);
     }
   }
@@ -107,7 +106,7 @@ export class Attacher {
         }
         sib.after(node);
       } else {
-        const p = this.parent();
+        const p = this.parent;
         if (p.childNodes.length > 0) {
           p.firstChild?.before(node);
         } else {
@@ -166,20 +165,22 @@ function onlyFirst(_value: unknown, idx: number) {
 }
 
 export function attachChildren(
-  attacher: Attacher,
-  children: TempNode,
+  root: HTMLElement | Attacher,
+  item: AktaNode,
   index?: number
 ): Observable<unknown> | void {
-  if (!children) {
+  const attacher =
+    root instanceof Attacher ? root : new Attacher(() => null, root);
+  if (!item) {
     const node = document.createTextNode('');
     attacher.attach(node, index ?? 0);
-  } else if (typeof children === 'string') {
-    const node = document.createTextNode(children);
+  } else if (typeof item === 'string') {
+    const node = document.createTextNode(item);
     attacher.attach(node, index ?? 0);
-  } else if (Array.isArray(children)) {
+  } else if (Array.isArray(item)) {
     const branch =
       typeof index === 'number' ? attacher.branch(index) : attacher;
-    const observables = children
+    const observables = item
       .map((child, idx) => {
         return attachChildren(branch, child, idx);
       })
@@ -195,8 +196,8 @@ export function attachChildren(
         branch.activate();
       })
     );
-  } else if (isObservable(children)) {
-    return children.pipe(
+  } else if (isObservable(item)) {
+    return item.pipe(
       switchMap(child => {
         const obs = attachChildren(attacher, child, index);
         if (!obs) {
@@ -206,5 +207,6 @@ export function attachChildren(
       }),
       filter(onlyFirst)
     );
+  } else if (isAktaElement(item)) {
   }
 }
