@@ -1,5 +1,5 @@
 import { isObservable } from 'rxjs';
-import { AktaNode } from '../dist/types';
+import { AktaNode } from './types';
 import { createDependencyMap } from './dependency-map';
 import { attachChildren } from './mount-ops';
 
