@@ -108,9 +108,10 @@ describe('DOM OPS', () => {
     unsub();
     onMount.complete();
     onUnmount.complete();
-    expect(root).toMatchSnapshot();
-    expect((await mounts).length).toBe(2);
+    await new Promise(res => setTimeout(res, 10));
     expect((await unmounts).length).toBe(2);
+    expect((await mounts).length).toBe(2);
+    expect(root).toMatchSnapshot();
   });
   it('should handle teardown', async () => {
     const root = document.createElement('div');

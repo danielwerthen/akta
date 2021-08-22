@@ -102,6 +102,7 @@ export class Attacher {
       if (!node || node instanceof Attacher) {
         continue;
       }
+      mountElement(node);
       const sib = this.nodes[i - 1] ?? this.sibling();
       if (sib instanceof Attacher) {
         sib.appendAfter(node);
