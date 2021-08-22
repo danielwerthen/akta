@@ -130,9 +130,12 @@ export function produceElement(
     const [element, nextDeps] = callComponent(type, props, deps);
 
     const output = produceElements(element, nextDeps);
+    const fns = nextDeps.get(teardownDependency);
+    if ((fns?.length ?? 0) < 1) {
+      return output;
+    }
     return new Observable(sub => {
       sub.add(() => {
-        const fns = nextDeps.get(teardownDependency);
         if (fns) {
           fns.forEach(item => item());
         }
