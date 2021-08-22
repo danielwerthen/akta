@@ -9,7 +9,7 @@ import {
   toArray,
 } from 'rxjs';
 import { useTeardown } from './dependencies';
-import { prepare } from './dom-ops';
+import { usePrepare } from './dom-ops';
 import { jsx } from './jsx-runtime';
 import { AktaNode } from './types';
 
@@ -138,7 +138,7 @@ describe('DOM OPS', () => {
     const eventually = new Subject<AktaNode>();
     function Comp() {
       const children = new BehaviorSubject<AktaNode>('Loading');
-      prepare(jsx('span', { children: eventually })).then(res => {
+      usePrepare(jsx('span', { children: eventually })).then(res => {
         children.next(res);
       });
       return jsx('p', { children });

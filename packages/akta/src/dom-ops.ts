@@ -185,7 +185,7 @@ function produceElements(
   }
 }
 
-export function prepare(element: AktaNode): Promise<AktaNode> {
+export function usePrepare(element: AktaNode): Promise<AktaNode> {
   const dependencies = dependecyContext.getContext();
 
   const children = produceElements(element, dependencies);
