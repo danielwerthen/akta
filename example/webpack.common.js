@@ -4,7 +4,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: './index.tsx',
-  mode: 'development',
   module: {
     rules: [
       {
@@ -17,7 +16,6 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       title: 'Development',
-      
     }),
   ],
   resolve: {
