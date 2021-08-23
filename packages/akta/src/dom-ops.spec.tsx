@@ -52,7 +52,7 @@ describe('DOM OPS', () => {
 
     const ratio = Math.round((100 * (t1 - t0)) / (t2 - t1)) / 100;
     console.log('Established ratio', ratio);
-    expect(ratio).toBeLessThan(10);
+    expect(ratio).toBeLessThan(20);
   });
 
   it('Array nodes are rendered correctly', async () => {
