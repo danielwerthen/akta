@@ -1,5 +1,6 @@
-import { from, interval, map, Observable, take } from 'rxjs';
+import { from, interval, map, Observable, of, take } from 'rxjs';
 import { createDependencyMap } from './dependency-map';
+import { jsx } from './jsx-runtime';
 import { attachChildren, Attacher } from './mount-ops';
 
 describe('mount-ops', () => {
@@ -46,5 +47,28 @@ describe('mount-ops', () => {
     gen.attach(document.createTextNode('updated'), 1);
     gen2.activate();
     expect(root).toMatchSnapshot();
+  });
+  it('should yield a completed state eventually', async () => {
+    const root = document.createElement('div');
+    function Comp() {
+      return jsx('div', { children: of('Complete') });
+    }
+    const observable = attachChildren(
+      root,
+      jsx(Comp, {}),
+      createDependencyMap()
+    );
+    if (!observable) {
+      throw new Error('Invalid');
+    }
+    const sub = {
+      next: jest.fn(),
+      error: jest.fn(),
+      complete: jest.fn(),
+    };
+    observable.subscribe(sub);
+    expect(sub.next.mock.calls.length).toBe(1);
+    expect(sub.error.mock.calls.length).toBe(0);
+    expect(sub.complete.mock.calls.length).toBe(1);
   });
 });

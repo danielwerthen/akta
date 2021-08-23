@@ -51,6 +51,7 @@ describe('DOM OPS', () => {
     const t2 = performance.now();
 
     const ratio = Math.round((100 * (t1 - t0)) / (t2 - t1)) / 100;
+    console.log('Established ratio', ratio);
     expect(ratio).toBeLessThan(10);
   });
 
