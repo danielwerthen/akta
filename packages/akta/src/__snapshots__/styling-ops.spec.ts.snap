@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`styling-ops should attach style tags in the right order 1`] = `
+<head>
+  <style
+    data-specificity="0"
+    media=""
+  />
+  <style
+    data-specificity="1"
+    media=""
+  />
+  <style
+    data-specificity="2"
+    media=""
+  />
+  <style
+    data-specificity="3"
+    media=""
+  />
+  <style
+    data-specificity="4"
+    media=""
+  />
+  <style
+    data-specificity="0"
+    media="(max-width: 750px)"
+  />
+  <style
+    data-specificity="1"
+    media="(max-width: 350px)"
+  />
+  <style
+    data-specificity="2"
+    media="(max-width: 350px)"
+  />
+  <style
+    data-specificity="4"
+    media="(max-width: 350px)"
+  />
+  <style
+    data-specificity="3"
+    media="(max-width: 250px)"
+  />
+</head>
+`;
