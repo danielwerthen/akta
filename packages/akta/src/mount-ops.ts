@@ -229,7 +229,8 @@ export function attachChildren(
         attacher.attach(obs, index ?? 0);
       }
     } else {
-      throw new Error('Invalid element error');
+      const node = document.createTextNode(item + '');
+      attacher.attach(node, index ?? 0);
     }
   } finally {
     if (!returnValue) {

@@ -38,7 +38,16 @@ function App() {
       <ObsArray />
       <p>Loops:</p>
       {loop}
-      {'daniel is <div>bad</div>'}
+      <p
+        tabIndex={1}
+        $background_focus="green"
+        $background_hover_focus="yellow"
+        $backgroundColor="gray"
+        $background="red"
+        $background_hover="blue"
+      >
+        {'daniel is <div>bad</div>'}
+      </p>
       {from([null, <Display />])}
     </div>
   );

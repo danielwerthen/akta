@@ -1,6 +1,6 @@
 import { isObservable, Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { standardCSSMethod } from './akta-styling';
+import { standardCSSMethod } from './styling-ops';
 import MetaObject, { MethodMissing } from './meta-object';
 
 export function isEvent(key: string) {

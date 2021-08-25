@@ -1,80 +1,5 @@
-type StyleSheetNode = [string, HTMLStyleElement[]];
-export function stylesheetMap2() {
-  const sheets: StyleSheetNode[] = [['', []]];
-  function get(attrName: string, media: string = ''): HTMLStyleElement {
-    const specificity = attrName.split('-').length - 1;
-    let i = 0;
-    let node: StyleSheetNode | null = null;
-    for (i = 0; i < sheets.length; i++) {
-      if (sheets[i][0] === media) {
-        node = sheets[i];
-        break;
-      }
-      if (sheets[i + 1] && sheets[i + 1][0] > media) {
-        sheets.splice(i + 1, 0, (node = [media, []]));
-        break;
-      }
-    }
-    if (!node) {
-      node = [media, []];
-      sheets.push(node);
-    }
-    if (!node[1][specificity]) {
-      const sheet = document.createElement('style');
-      sheet.media = media;
-      sheet.dataset['specificity'] = specificity.toString();
-      node[1][specificity] = sheet;
-      let prevSheet: HTMLStyleElement | null = null;
-      for (let j = i; j >= 0; j--) {
-        if (j === i) {
-          if (specificity > 0) {
-            for (let k = specificity - 1; k >= 0; k--) {
-              prevSheet = sheets[j][1][k];
-              if (prevSheet) {
-                break;
-              }
-            }
-          }
-        } else {
-          if (specificity > 0) {
-            for (let k = sheets[j][1].length; k >= 0; k--) {
-              prevSheet = sheets[j][1][k];
-              if (prevSheet) {
-                break;
-              }
-            }
-          }
-        }
-        if (prevSheet) {
-          break;
-        }
-      }
-      if (!prevSheet) {
-        let nextSheet: HTMLStyleElement | null = null;
-        for (let j = i; j < sheets.length; j++) {
-          for (let k = specificity + 1; k < sheets[j][1].length; k--) {
-            nextSheet = sheets[j][1][k];
-            if (nextSheet) {
-              break;
-            }
-          }
-          if (nextSheet) {
-            break;
-          }
-        }
-        if (nextSheet) {
-          nextSheet.before(sheet);
-        } else {
-          document.head.appendChild(sheet);
-        }
-      } else {
-        prevSheet.after(sheet);
-      }
-    }
-    return node[1][specificity];
-  }
-  return get;
-}
+import { isObservable, Observable, tap } from 'rxjs';
+import { AttributeMethod } from './element-ops';
 
 function isStyleElement(obj: ChildNode): obj is HTMLStyleElement {
   return typeof (obj as HTMLStyleElement).media === 'string';
@@ -82,8 +7,7 @@ function isStyleElement(obj: ChildNode): obj is HTMLStyleElement {
 
 export function stylesheetMap() {
   let startNode: HTMLStyleElement | undefined;
-  function get(attrName: string, media: string = ''): HTMLStyleElement {
-    const specificity = (attrName.split('-').length - 1).toString();
+  function get(specificity: string, media: string = ''): HTMLStyleElement {
     if (!startNode) {
       const sheet = (startNode = document.createElement('style'));
       sheet.media = media;
@@ -120,4 +44,104 @@ export function stylesheetMap() {
     return newNode;
   }
   return get;
+}
+
+type ParsedAttribute = {
+  attributeName: string;
+  specificity: number;
+  media?: string;
+  pseudo?: string;
+};
+
+export const styleModifiers: {
+  [key: string]: Omit<ParsedAttribute, 'attributeName' | 'specificity'>;
+} = {
+  small: {
+    media: '(max-width: 768px)',
+  },
+  medium: {
+    media: '(max-width: 1200px) and (min-width: 769px)',
+  },
+  large: {
+    media: '(min-width: 1201px)',
+  },
+};
+
+const uppercasePattern = /[A-Z]/g;
+export function parseProp(prop: string): ParsedAttribute {
+  const [attr, ...mods] = prop.split('_');
+  const hyphen = attr.replace(uppercasePattern, '-$&').toLowerCase();
+  let specificity = hyphen.split('-').length - 1;
+  return mods.reduce(
+    (sum: ParsedAttribute, mod) => {
+      const predefined = styleModifiers[mod];
+      if (predefined) {
+        const { media, pseudo } = predefined;
+        if (media) {
+          sum.media = sum.media ? `${sum.media} and ${media}` : media;
+        }
+        if (pseudo) {
+          sum.pseudo = sum.pseudo ? `${sum.pseudo}${pseudo}` : pseudo;
+        }
+        return sum;
+      }
+      if (mod.startsWith('max')) {
+        const amount = Number(mod.substr(3));
+        const media = `(max-width: ${amount}px)`;
+        sum.media = sum.media ? `${sum.media} and ${media}` : media;
+      } else if (mod.startsWith('min')) {
+        const amount = Number(mod.substr(3));
+        const media = `(min-width: ${amount}px)`;
+        sum.media = sum.media ? `${sum.media} and ${media}` : media;
+      } else {
+        const pseudo = `:${mod.replace(uppercasePattern, '-$&').toLowerCase()}`;
+        sum.pseudo = sum.pseudo ? `${sum.pseudo}${pseudo}` : pseudo;
+      }
+      return sum;
+    },
+    {
+      attributeName: hyphen,
+      specificity,
+    }
+  );
+}
+
+let ruleCount = 0;
+const map = stylesheetMap();
+export function standardCSSMethod<T extends HTMLElement>(
+  key: string
+): AttributeMethod<T> {
+  const { attributeName, specificity, media, pseudo } = parseProp(key);
+  const styleSheet = map(specificity.toString(), media);
+  const cache: { [key: string]: string } = {};
+  function getClassName(value: string) {
+    if (cache[value]) {
+      return cache[value];
+    }
+    const className = `c${ruleCount++}`;
+    styleSheet.sheet?.insertRule(
+      `.${className}${pseudo ?? ''}{ ${attributeName}:${value}; }`,
+      styleSheet.sheet?.cssRules.length
+    );
+    return (cache[value] = className);
+  }
+  return function(element: T, value: Observable<string> | string) {
+    if (isObservable(value)) {
+      let prevClassName: string;
+      return value.pipe(
+        tap((val: string) => {
+          const className = getClassName(val);
+          if (prevClassName) {
+            element.classList.remove(prevClassName);
+          }
+          element.classList.add(className);
+          prevClassName = className;
+        })
+      );
+    } else {
+      const className = getClassName(value);
+      element.classList.add(className);
+      return;
+    }
+  };
 }
