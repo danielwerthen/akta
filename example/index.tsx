@@ -1,6 +1,9 @@
 import { mount, Props } from 'akta';
 import { finalize, interval, of, from, startWith } from 'rxjs';
 import { map, delay } from 'rxjs/operators';
+import { route } from 'akta-router';
+
+console.log(route(2));
 
 function Display() {
   const phase1 = of('phase1').pipe(delay(1500));

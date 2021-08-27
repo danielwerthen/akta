@@ -16,7 +16,6 @@ import {
   useTeardown,
 } from './dependencies';
 import { DependencyMap } from './dependency-map';
-// TODO: import { mountElement, unmountElement } from './element-ops';
 import { jsx } from './jsx-runtime';
 import { lazy } from './lazy-function';
 import { attachChildren } from './mount-ops';

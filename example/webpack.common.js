@@ -20,6 +20,9 @@ module.exports = {
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    alias: {
+      'akta-router': '../packages/akta-router',
+    },
   },
   output: {
     filename: 'main.js',

@@ -9,7 +9,8 @@
     "build:analyze": "webpack --config webpack.analyze.js"
   },
   "alias": {
-    "akta": "../packages/akta"
+    "akta": "../packages/akta",
+    "akta-router": "../packages/akta-router"
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx": "^7.14.9",
