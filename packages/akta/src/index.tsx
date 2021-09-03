@@ -3,7 +3,8 @@ import { AktaNode } from './types';
 import { createDependencyMap } from './dependency-map';
 import { attachChildren } from './mount-ops';
 
-export { Props, useTeardown, useNext } from './dependencies';
+export { Props, useTeardown, useNext, dependecyContext } from './dependencies';
+export { createDependency, createLazyDependency } from './dependency-map';
 
 export * from './jsx-runtime';
 

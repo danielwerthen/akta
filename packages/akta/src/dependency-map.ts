@@ -1,10 +1,29 @@
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-export type Dependency<T> = {
+type EagerDependency<T> = {
   key: symbol;
   value: T;
 };
+type LazyDependency<T> = {
+  key: symbol;
+  init: () => T;
+};
+
+export type Dependency<T> = EagerDependency<T> | LazyDependency<T>;
+
+export function isLazyDependency<T>(
+  dep: Dependency<T>
+): dep is LazyDependency<T> {
+  return typeof (dep as LazyDependency<T>).init === 'function';
+}
+
+export function getInitialValue<T>(dep: Dependency<T>): T {
+  if (isLazyDependency(dep)) {
+    return dep.init();
+  }
+  return dep.value;
+}
 
 export type DependencyMap = {
   <T>(dep: Dependency<T>): Observable<T>;
@@ -30,7 +49,7 @@ export function createDependencyMap(parent?: DependencyMap): DependencyMap {
     return subject.pipe(
       switchMap(val => {
         if ((val as unknown) === LocalStop) {
-          return parent ? parent(dep) : of(dep.value);
+          return parent ? parent(dep) : of(getInitialValue(dep));
         }
         return of(val);
       })
@@ -49,14 +68,14 @@ export function createDependencyMap(parent?: DependencyMap): DependencyMap {
     }
   };
   map.use = dep => {
-    return parent ? parent(dep) : of(dep.value);
+    return parent ? parent(dep) : of(getInitialValue(dep));
   };
   map.get = <T>(dep: Dependency<T>): T => {
     const local = store.get(dep.key)?.value as T;
     if (!local || (local as unknown) === LocalStop) {
       const parVal = parent?.get(dep) as T;
       if (!parVal || (parVal as unknown) === LocalStop) {
-        return dep.value;
+        return getInitialValue(dep);
       }
       return parVal;
     }
@@ -69,5 +88,12 @@ export function createDependency<T>(initialValue: T): Dependency<T> {
   return {
     key: Symbol('Dependency'),
     value: initialValue,
+  };
+}
+
+export function createLazyDependency<T>(init: () => T): Dependency<T> {
+  return {
+    key: Symbol('Dependency'),
+    init,
   };
 }
