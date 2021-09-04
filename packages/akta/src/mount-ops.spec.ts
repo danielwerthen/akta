@@ -1,5 +1,5 @@
 import { from, interval, map, Observable, of, take } from 'rxjs';
-import { createDependencyMap } from './dependency-map';
+import { DependencyMap } from './dependency-map';
 import { jsx } from './jsx-runtime';
 import { attachChildren, Attacher } from './mount-ops';
 
@@ -22,7 +22,7 @@ describe('mount-ops', () => {
     const sub = attachChildren(
       root,
       [child1, child2, child3, child4],
-      createDependencyMap()
+      new DependencyMap()
     );
     if (sub) {
       sub.subscribe({
@@ -53,11 +53,7 @@ describe('mount-ops', () => {
     function Comp() {
       return jsx('div', { children: of('Complete') });
     }
-    const observable = attachChildren(
-      root,
-      jsx(Comp, {}),
-      createDependencyMap()
-    );
+    const observable = attachChildren(root, jsx(Comp, {}), new DependencyMap());
     if (!observable) {
       throw new Error('Invalid');
     }

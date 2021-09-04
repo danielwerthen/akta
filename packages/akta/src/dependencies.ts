@@ -22,7 +22,7 @@ export function useNext<T extends AktaNode, RETURN extends AktaNode, NEXT>(
   const ctx = dependecyContext.getContext();
   return (input: NEXT) => {
     return firstValueFrom(
-      ctx(continuationDependency).pipe(switchMap(next => next(input)))
+      ctx.observe(continuationDependency).pipe(switchMap(next => next(input)))
     ).then(() => void 0);
   };
 }

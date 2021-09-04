@@ -109,7 +109,7 @@ export function produceElement(
     const element = document.createElement(type);
     const observables: Observable<unknown>[] = [];
 
-    const elements = deps.get(elementsDependency);
+    const elements = deps.peek(elementsDependency);
     for (var key in props) {
       const observable =
         key === 'children'
@@ -129,7 +129,7 @@ export function produceElement(
     const [element, nextDeps] = callComponent(type, props, deps);
 
     const output = produceElements(element, nextDeps);
-    const fns = nextDeps.get(teardownDependency);
+    const fns = nextDeps.peek(teardownDependency);
     if ((fns?.length ?? 0) < 1) {
       return output;
     }

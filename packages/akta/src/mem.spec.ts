@@ -1,7 +1,7 @@
 import { verify } from '../test/mem-verify';
 import { Subject } from 'rxjs';
 import { dependecyContext } from './dependencies';
-import { createDependencyMap } from './dependency-map';
+import { DependencyMap } from './dependency-map';
 import { mount } from './';
 import { jsx } from './jsx-runtime';
 
@@ -17,7 +17,7 @@ describe('ObserveAsync', () => {
 
       dependecyContext.setContext(
         () => mount(jsx('div', { children: value }), root),
-        createDependencyMap()
+        new DependencyMap()
       );
       value.next([jsx(Comp, {})]);
       expect(root).toMatchSnapshot();
