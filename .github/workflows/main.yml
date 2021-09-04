@@ -24,7 +24,3 @@ jobs:
 
       - name: Test
         run: yarn test --ci --coverage --maxWorkers=2
-
-      - name: Test memory
-        if: ${{ matrix.node == '14.x'}}
-        run: yarn test:mem --ci --coverage --maxWorkers=2

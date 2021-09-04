@@ -8,6 +8,8 @@ export { createDependency, createLazyDependency } from './dependency-map';
 
 export * from './jsx-runtime';
 export * from './sync-context';
+export { usePrepare } from './dom-ops';
+export * from './types';
 
 export function mount(element: AktaNode, root: HTMLElement): () => void {
   const rest = attachChildren(root, element, new DependencyMap());

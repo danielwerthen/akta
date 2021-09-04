@@ -2,7 +2,7 @@ let WRef: any = (global as any).WeakRef;
 
 let subjects: any[] = [];
 
-function register(obj: any) {
+function mockRegister(obj: any) {
   if (!subjects) {
     subjects = [];
   }
@@ -20,7 +20,7 @@ jest.mock('rxjs/dist/cjs/internal/Subscription', () => {
   class Subscription extends actual.Subscription {
     constructor(...args: []) {
       super(...args);
-      register(this);
+      mockRegister(this);
     }
   }
   return { ...actual, Subscription };
@@ -31,7 +31,7 @@ jest.mock('rxjs/dist/cjs/internal/Observable', () => {
   class Observable extends actual.Observable {
     constructor(...args: []) {
       super(...args);
-      register(this);
+      mockRegister(this);
     }
   }
   return { ...actual, Observable };
@@ -42,28 +42,28 @@ jest.mock('rxjs', () => {
   class Subject extends actual.Subject {
     constructor() {
       super();
-      register(this);
+      mockRegister(this);
     }
   }
 
   class BehaviorSubject extends actual.BehaviorSubject {
     constructor(...args: any[]) {
       super(...args);
-      register(this);
-    }
-  }
-
-  class ReplaySubject extends actual.ReplaySubject {
-    constructor(...args: any[]) {
-      super(...args);
-      register(this);
+      mockRegister(this);
     }
   }
 
   class Observable extends actual.Observable {
     constructor(...args: any[]) {
       super(...args);
-      register(this);
+      mockRegister(this);
+    }
+  }
+
+  class ReplaySubject extends actual.ReplaySubject {
+    constructor(...args: any[]) {
+      super(...args);
+      mockRegister(this);
     }
   }
   return {

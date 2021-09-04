@@ -11,9 +11,9 @@
   "scripts": {
     "start": "tsdx watch --tsconfig tsconfig.build.json --verbose --noClean",
     "build": "tsdx build --tsconfig tsconfig.build.json",
-    "test": "tsdx test",
-    "test:mem": "node --expose-gc --harmony-weak-refs ../../node_modules/.bin/tsdx test",
-    "test:watch": "node --expose-gc --harmony-weak-refs ../../node_modules/.bin/tsdx test --watch",
+    "test": "node ../../node_modules/.bin/jest",
+    "test:mem": "node --expose-gc --harmony-weak-refs ../../node_modules/.bin/jest",
+    "test:watch": "node --expose-gc --harmony-weak-refs ../../node_modules/.bin/jest --watch",
     "test:clear": "tsdx test --clearCache",
     "lint": "tsdx lint",
     "prepublish": "npm run build"
@@ -27,8 +27,8 @@
       "require": "./dist/index.js"
     },
     "./jsx-runtime": {
-      "import": "./jsx-runtime.js",
-      "require": "./jsx-runtime.cjs.js"
+      "import": "./jsx-runtime.esm.js",
+      "require": "./jsx-runtime.js"
     }
   },
   "files": [
