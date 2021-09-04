@@ -13,6 +13,12 @@
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
     "jsx": "react",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "akta-utils": ["./packages/utils/src"],
+      "akta-router": ["./packages/akta-router/src"],
+      "akta": ["./packages/akta/src"],
+      "$test/*": ["./test/*"]
+    }
   }
 }
