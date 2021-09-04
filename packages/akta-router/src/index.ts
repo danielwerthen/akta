@@ -23,7 +23,7 @@ export function createRouter(history?: History): Router {
 export const routerDependency = createLazyDependency<Router>(createRouter);
 
 export function useLocation() {
-  const ctx = dependecyContext.getContext()(routerDependency);
+  const ctx = dependecyContext.getContext().observe(routerDependency);
   return ctx.pipe(switchMap(item => item.location));
 }
 
