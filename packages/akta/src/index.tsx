@@ -7,6 +7,7 @@ export { Props, useTeardown, useNext, dependecyContext } from './dependencies';
 export { createDependency, createLazyDependency } from './dependency-map';
 
 export * from './jsx-runtime';
+export * from './sync-context';
 
 export function mount(element: AktaNode, root: HTMLElement): () => void {
   const rest = attachChildren(root, element, new DependencyMap());
