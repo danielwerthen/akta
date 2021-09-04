@@ -38,7 +38,6 @@
     "jsx-runtime.js"
   ],
   "dependencies": {
-    "akta-utils": "^0.0.1",
     "csstype": "^3.0.8",
     "rxjs": "^7.3.0"
   },
