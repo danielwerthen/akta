@@ -6,8 +6,9 @@ import {
   Observable,
   of,
   ReplaySubject,
+  Subscription,
 } from 'rxjs';
-import { filter, map, mapTo, switchMap } from 'rxjs/operators';
+import { filter, map, mapTo, switchMap, take } from 'rxjs/operators';
 import {
   continuationDependency,
   dependecyContext,
@@ -202,4 +203,26 @@ export function usePrepare(element: AktaNode): Promise<AktaNode> {
   return Promise.resolve(
     jsx(AktaPreparedComponent, { children: of(children) })
   );
+}
+
+export function usePreparer(): (
+  element: AktaNode
+) => [AktaNode, Observable<void> | null] {
+  const dependencies = dependecyContext.getContext();
+  const subscriptions: Subscription[] = [];
+  useTeardown(() => {
+    subscriptions.forEach(sub => sub.unsubscribe());
+  });
+  return (element: AktaNode) => {
+    const children = produceElements(element, dependencies);
+    if (isObservable(children)) {
+      const subject = new ReplaySubject<ChildNode>(1);
+      subscriptions.push(children.subscribe(subject));
+      return [
+        jsx(AktaPreparedComponent, { children: subject.asObservable() }),
+        subject.pipe(take(1), mapTo(void 0)),
+      ];
+    }
+    return [jsx(AktaPreparedComponent, { children: of(children) }), null];
+  };
 }

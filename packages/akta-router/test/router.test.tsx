@@ -27,7 +27,7 @@ describe('Test', () => {
     expect(root).toMatchSnapshot();
     hist.push('/foobar');
     expect(root).toMatchSnapshot();
-    momo.next('Foobar');
+    momo.next('Foobar2');
     expect(root).toMatchSnapshot();
   });
 });

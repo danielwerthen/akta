@@ -3,20 +3,29 @@ import {
   createLazyDependency,
   createSyncContext,
   AktaNode,
+  usePreparer,
 } from 'akta';
-import { forkJoin, Observable, Subscriber } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { forkJoin, Observable, of, Subject, Subscriber } from 'rxjs';
+import { catchError, mapTo, switchMap, take } from 'rxjs/operators';
 import { createBrowserHistory, History, Location } from 'history';
 
 export class RouterState {
   history: History;
   location: Observable<Location>;
+  conductor = new Subject<void>();
   private subscribers: Subscriber<Location>[] = [];
   teardown: () => void;
   constructor(history: History) {
     this.history = history;
-    this.teardown = history.listen(({ location }) => {
-      this.subscribers.forEach(sub => sub.next(location));
+    this.teardown = history.listen(async ({ location }) => {
+      const transitions: Observable<void>[] = [];
+      transitionContext.setContext(() => {
+        this.subscribers.forEach(sub => sub.next(location));
+      }, transitions);
+      forkJoin(transitions).subscribe({
+        complete: () => this.conductor.next(),
+        error: () => this.conductor.next(),
+      });
     });
     this.location = new Observable<Location>(subscriber => {
       subscriber.next(this.history.location);
@@ -28,13 +37,6 @@ export class RouterState {
         }
       };
     });
-  }
-  push(url: string, state?: {} | null): Observable<void[]> {
-    const transitions: Observable<void>[] = [];
-    transitionContext.setContext(() => {
-      this.history.push(url, state);
-    }, transitions);
-    return forkJoin(transitions);
   }
 }
 
@@ -76,12 +78,31 @@ export type RouteProps = {
 
 export function Route({ children, path }: RouteProps) {
   const loc = useLocation();
+  const ctx = dependecyContext.getContext();
+  const prepare = usePreparer();
   return loc.pipe(
-    map(location => {
+    switchMap(location => {
+      const router = ctx.peek(routerDependency);
+      const transitions = transitionContext.getContext();
       if (location.pathname === path) {
-        return children;
+        const [node, promise] = prepare(children);
+        if (Array.isArray(transitions)) {
+          if (promise) {
+            transitions.push(promise);
+          }
+          return router.conductor.pipe(take(1), mapTo(node));
+        } else {
+          return of(node);
+        }
       }
-      return null;
+      if (Array.isArray(transitions)) {
+        return router.conductor.pipe(take(1), mapTo(null));
+      }
+      return of(null);
+    }),
+    catchError(e => {
+      console.error(e);
+      return of(<p>Error: {e}</p>);
     })
   );
 }

@@ -12,7 +12,7 @@ exports[`Test should match snapshot 1`] = `
 exports[`Test should match snapshot 2`] = `
 <div>
   <div>
-    
+    Route
     
   </div>
 </div>
@@ -22,7 +22,7 @@ exports[`Test should match snapshot 3`] = `
 <div>
   <div>
     
-    Foobar
+    Foobar2
   </div>
 </div>
 `;
