@@ -22,6 +22,7 @@ import {
   distinctUntilChanged,
   map,
   mapTo,
+  startWith,
   switchMap,
   take,
 } from 'rxjs/operators';
@@ -99,15 +100,28 @@ export function route(num: number): number {
 
 export type RouteProps = {
   path: string;
+  exact?: boolean;
+  strict?: boolean;
+  sensitive?: boolean;
   children: AktaNode;
 };
 
-export function Route({ children, path }: RouteProps) {
+export function Route({
+  children,
+  exact = false,
+  strict = false,
+  sensitive = false,
+  path,
+}: RouteProps) {
+  const matcher = match(path, {
+    end: exact,
+    strict,
+    sensitive,
+  });
   const loc = useLocation();
   const ctx = useContext();
   const matchedRoutes = ctx.peek(matchedRoutesDependency);
   const prepare = usePreparer();
-  const matcher = match(path);
   const routeSymbol = Symbol(`Route for ${path}`);
   useTeardown(() => {
     matchedRoutes.value.delete(routeSymbol);
@@ -131,6 +145,7 @@ export function Route({ children, path }: RouteProps) {
           if (promise) {
             transitions.push(promise);
           }
+
           return router.pipe(
             switchMap(rtr => rtr.conductor),
             take(1),
@@ -151,6 +166,7 @@ export function Route({ children, path }: RouteProps) {
       }
       return of(null);
     }),
+    startWith(null),
     catchError(e => {
       console.error(e);
       return of(<p>Error: {e}</p>);
