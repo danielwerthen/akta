@@ -1,5 +1,11 @@
 import { createMemoryHistory } from 'history';
-import { createRouter, Route, RouteMatchDependency, Router } from '../src';
+import {
+  createRouter,
+  Fallback,
+  Route,
+  routeMatchDependency,
+  Router,
+} from '../src';
 import { mount, useDependency } from 'akta';
 import { map, Subject } from 'rxjs';
 describe('Test', () => {
@@ -15,10 +21,10 @@ describe('Test', () => {
   });
   it('should match snapshot', () => {
     const root = document.createElement('div');
-    const hist = createMemoryHistory({ initialEntries: ['/'] });
+    const hist = createMemoryHistory({ initialEntries: ['/route'] });
     const momo = new Subject<string>();
     function Comp() {
-      const match = useDependency(RouteMatchDependency);
+      const match = useDependency(routeMatchDependency);
       return (
         <div>
           {match.pipe(
@@ -32,10 +38,11 @@ describe('Test', () => {
     }
     mount(
       <Router history={hist}>
-        <Route path="/">Route</Route>
+        <Route path="/route">Route</Route>
         <Route path="/foobar/:id">
           <Comp />
         </Route>
+        <Fallback>Fallback</Fallback>
       </Router>,
       root
     );
@@ -43,6 +50,8 @@ describe('Test', () => {
     hist.push('/foobar/42');
     expect(root).toMatchSnapshot();
     momo.next('Foobar2');
+    expect(root).toMatchSnapshot();
+    hist.push('/unmatched');
     expect(root).toMatchSnapshot();
   });
 });

@@ -44,6 +44,14 @@ export function useTeardown(fn: TeardownFunction) {
   });
 }
 
+export function useProvideDependency<T>(
+  dep: Dependency<T>,
+  value: T | ((old?: T) => T)
+) {
+  const ctx = dependecyContext.getContext();
+  ctx.provide(dep, value);
+}
+
 export function useDependency<T>(dep: Dependency<T>): Observable<T> {
   const ctx = dependecyContext.getContext();
   return ctx.observe(dep);

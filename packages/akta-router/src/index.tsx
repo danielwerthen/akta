@@ -1,12 +1,22 @@
 import {
-  dependecyContext,
   createLazyDependency,
   createDependency,
   createSyncContext,
+  useDependency,
+  useContext,
+  useTeardown,
   AktaNode,
   usePreparer,
+  useProvideDependency,
 } from 'akta';
-import { forkJoin, Observable, of, Subject, Subscriber } from 'rxjs';
+import {
+  BehaviorSubject,
+  forkJoin,
+  Observable,
+  of,
+  Subject,
+  Subscriber,
+} from 'rxjs';
 import {
   catchError,
   distinctUntilChanged,
@@ -17,6 +27,18 @@ import {
 } from 'rxjs/operators';
 import { createBrowserHistory, History, Location } from 'history';
 import { match, Match } from 'path-to-regexp';
+
+export const routerDependency = createLazyDependency<RouterState>(createRouter);
+
+export const routeMatchDependency = createDependency<
+  Match<{
+    [key: string]: unknown;
+  }>
+>(false);
+
+export const matchedRoutesDependency = createDependency<
+  BehaviorSubject<Set<Symbol>>
+>(new BehaviorSubject(new Set()));
 
 export class RouterState {
   history: History;
@@ -61,20 +83,15 @@ export type RouterProps = {
 };
 
 export function Router({ history, children }: RouterProps) {
-  dependecyContext
-    .getContext()
-    .provide(routerDependency, createRouter(history));
+  useProvideDependency(routerDependency, createRouter(history));
+  useProvideDependency(matchedRoutesDependency, new BehaviorSubject(new Set()));
   return <div>{children}</div>;
 }
 
-export const routerDependency = createLazyDependency<RouterState>(createRouter);
-
 export function useLocation(): Observable<Location> {
-  const ctx = dependecyContext.getContext().observe(routerDependency);
+  const ctx = useDependency(routerDependency);
   return ctx.pipe(switchMap(item => item.location));
 }
-
-export function useUpdateLocation() {}
 
 export function route(num: number): number {
   return num;
@@ -85,21 +102,21 @@ export type RouteProps = {
   children: AktaNode;
 };
 
-export const RouteMatchDependency = createDependency<
-  Match<{
-    [key: string]: unknown;
-  }>
->(false);
-
 export function Route({ children, path }: RouteProps) {
   const loc = useLocation();
-  const ctx = dependecyContext.getContext();
+  const ctx = useContext();
+  const matchedRoutes = ctx.peek(matchedRoutesDependency);
   const prepare = usePreparer();
   const matcher = match(path);
+  const routeSymbol = Symbol(`Route for ${path}`);
+  useTeardown(() => {
+    matchedRoutes.value.delete(routeSymbol);
+    matchedRoutes.next(matchedRoutes.value);
+  });
   return loc.pipe(
     map(location => {
       const matched = matcher(location.pathname);
-      ctx.provide(RouteMatchDependency, matched);
+      ctx.provide(routeMatchDependency, matched);
       return !!matched;
     }),
     distinctUntilChanged(),
@@ -107,6 +124,8 @@ export function Route({ children, path }: RouteProps) {
       const router = ctx.observe(routerDependency);
       const transitions = transitionContext.getContext();
       if (matched) {
+        matchedRoutes.value.add(routeSymbol);
+        matchedRoutes.next(matchedRoutes.value);
         const [node, promise] = prepare(children);
         if (Array.isArray(transitions)) {
           if (promise) {
@@ -121,6 +140,8 @@ export function Route({ children, path }: RouteProps) {
           return of(node);
         }
       }
+      matchedRoutes.value.delete(routeSymbol);
+      matchedRoutes.next(matchedRoutes.value);
       if (Array.isArray(transitions)) {
         return router.pipe(
           switchMap(rtr => rtr.conductor),
@@ -134,5 +155,19 @@ export function Route({ children, path }: RouteProps) {
       console.error(e);
       return of(<p>Error: {e}</p>);
     })
+  );
+}
+
+export type FallbackProps = {
+  children: AktaNode;
+};
+
+export function Fallback({ children }: FallbackProps) {
+  return useDependency(matchedRoutesDependency).pipe(
+    switchMap(item => item),
+    map(matched => {
+      return matched.size === 0 ? children : null;
+    }),
+    distinctUntilChanged()
   );
 }
