@@ -1,7 +1,7 @@
 import { createMemoryHistory } from 'history';
-import { createRouter, Route, Router } from '../src';
-import { mount } from 'akta';
-import { Subject } from 'rxjs';
+import { createRouter, Route, RouteMatchDependency, Router } from '../src';
+import { mount, useDependency } from 'akta';
+import { map, Subject } from 'rxjs';
 describe('Test', () => {
   it('should', () => {
     const router = createRouter(createMemoryHistory());
@@ -17,15 +17,30 @@ describe('Test', () => {
     const root = document.createElement('div');
     const hist = createMemoryHistory({ initialEntries: ['/'] });
     const momo = new Subject<string>();
+    function Comp() {
+      const match = useDependency(RouteMatchDependency);
+      return (
+        <div>
+          {match.pipe(
+            map(match =>
+              match ? `Param id: ${match.params.id}` : 'Not matched'
+            )
+          )}
+          {momo}
+        </div>
+      );
+    }
     mount(
       <Router history={hist}>
         <Route path="/">Route</Route>
-        <Route path="/foobar">{momo}</Route>
+        <Route path="/foobar/:id">
+          <Comp />
+        </Route>
       </Router>,
       root
     );
     expect(root).toMatchSnapshot();
-    hist.push('/foobar');
+    hist.push('/foobar/42');
     expect(root).toMatchSnapshot();
     momo.next('Foobar2');
     expect(root).toMatchSnapshot();

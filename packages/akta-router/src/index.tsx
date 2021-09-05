@@ -1,13 +1,22 @@
 import {
   dependecyContext,
   createLazyDependency,
+  createDependency,
   createSyncContext,
   AktaNode,
   usePreparer,
 } from 'akta';
 import { forkJoin, Observable, of, Subject, Subscriber } from 'rxjs';
-import { catchError, mapTo, switchMap, take } from 'rxjs/operators';
+import {
+  catchError,
+  distinctUntilChanged,
+  map,
+  mapTo,
+  switchMap,
+  take,
+} from 'rxjs/operators';
 import { createBrowserHistory, History, Location } from 'history';
+import { match, Match } from 'path-to-regexp';
 
 export class RouterState {
   history: History;
@@ -76,27 +85,48 @@ export type RouteProps = {
   children: AktaNode;
 };
 
+export const RouteMatchDependency = createDependency<
+  Match<{
+    [key: string]: unknown;
+  }>
+>(false);
+
 export function Route({ children, path }: RouteProps) {
   const loc = useLocation();
   const ctx = dependecyContext.getContext();
   const prepare = usePreparer();
+  const matcher = match(path);
   return loc.pipe(
-    switchMap(location => {
-      const router = ctx.peek(routerDependency);
+    map(location => {
+      const matched = matcher(location.pathname);
+      ctx.provide(RouteMatchDependency, matched);
+      return !!matched;
+    }),
+    distinctUntilChanged(),
+    switchMap(matched => {
+      const router = ctx.observe(routerDependency);
       const transitions = transitionContext.getContext();
-      if (location.pathname === path) {
+      if (matched) {
         const [node, promise] = prepare(children);
         if (Array.isArray(transitions)) {
           if (promise) {
             transitions.push(promise);
           }
-          return router.conductor.pipe(take(1), mapTo(node));
+          return router.pipe(
+            switchMap(rtr => rtr.conductor),
+            take(1),
+            mapTo(node)
+          );
         } else {
           return of(node);
         }
       }
       if (Array.isArray(transitions)) {
-        return router.conductor.pipe(take(1), mapTo(null));
+        return router.pipe(
+          switchMap(rtr => rtr.conductor),
+          take(1),
+          mapTo(null)
+        );
       }
       return of(null);
     }),

@@ -31,7 +31,8 @@ function Base() {}
 
 Object.defineProperty(Base, 'prototype', { value: prototype });
 
-class MetaObject<T> extends (Base as any) implements MetaObjectInterface<T> {
+class MetaObject<T> extends ((Base as unknown) as new () => {})
+  implements MetaObjectInterface<T> {
   [key: string]: T;
   [MethodMissing](_property: string | symbol): T | undefined {
     throw new Error('MethodMissing is not defined');

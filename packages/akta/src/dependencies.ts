@@ -1,5 +1,11 @@
-import { BehaviorSubject, firstValueFrom, Subject, switchMap } from 'rxjs';
-import { createDependency, DependencyMap } from './dependency-map';
+import {
+  BehaviorSubject,
+  firstValueFrom,
+  Observable,
+  Subject,
+  switchMap,
+} from 'rxjs';
+import { createDependency, DependencyMap, Dependency } from './dependency-map';
 import { AllElements, isEvent } from './element-ops';
 import { lazy } from './lazy-function';
 import MetaObject, { MethodMissing } from './meta-object';
@@ -36,6 +42,15 @@ export function useTeardown(fn: TeardownFunction) {
     fns.push(fn);
     return fns;
   });
+}
+
+export function useDependency<T>(dep: Dependency<T>): Observable<T> {
+  const ctx = dependecyContext.getContext();
+  return ctx.observe(dep);
+}
+
+export function useContext(): DependencyMap {
+  return dependecyContext.getContext();
 }
 
 export class PropertiesBase extends MetaObject<

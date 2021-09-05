@@ -22,7 +22,10 @@ exports[`Test should match snapshot 3`] = `
 <div>
   <div>
     
-    Foobar2
+    <div>
+      Param id: 42
+      Foobar2
+    </div>
   </div>
 </div>
 `;
