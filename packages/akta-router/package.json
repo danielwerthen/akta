@@ -14,7 +14,7 @@
   },
   "main": "dist/index.js",
   "module": "dist/akta-router.esm.js",
-  "typings": "dist/index.d.ts",
+  "typings": "dist/akta-router/src/index.d.ts",
   "files": [
     "README.md",
     "dist"
