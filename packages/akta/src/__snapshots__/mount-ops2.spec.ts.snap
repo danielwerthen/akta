@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Mount ops 2 should create deterministic structures 1`] = `
+<article>
+  <div />
+  Baz
+  Foobar
+  <div />
+</article>
+`;
+
+exports[`Observe node shoudl work 1`] = `
+<article>
+  <div>
+    baz
+    test
+    foobar
+  </div>
+</article>
+`;
