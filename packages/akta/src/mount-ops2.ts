@@ -236,7 +236,9 @@ export function observeNode(
       }
       if (observables.length < 1) {
         if (childAttacher) {
-          childAttacher.activate(node => element.append(node));
+          childAttacher.activate(node =>
+            element.insertBefore(node, element.firstChild)
+          );
         }
         attacher.attach(element, idx ?? [0]);
         return;
@@ -244,7 +246,9 @@ export function observeNode(
       return combineLatest(observables).pipe(
         tap(() => {
           if (childAttacher) {
-            childAttacher.activate(node => element.append(node));
+            childAttacher.activate(node =>
+              element.insertBefore(node, element.firstChild)
+            );
           }
           attacher.attach(element, idx ?? [0]);
         })
@@ -354,10 +358,14 @@ export function mount(element: AktaNode, root: HTMLElement): () => void {
   const children = observeNode(element, new DependencyMap(), attacher);
   if (isObservable(children)) {
     const sub = children
-      .pipe(tap(() => attacher.activate(node => root.append(node))))
+      .pipe(
+        tap(() =>
+          attacher.activate(node => root.insertBefore(node, root.firstChild))
+        )
+      )
       .subscribe();
     return () => sub.unsubscribe();
   }
-  attacher.activate(node => root.append(node));
+  attacher.activate(node => root.insertBefore(node, root.firstChild));
   return () => void 0;
 }

@@ -18,3 +18,25 @@ exports[`Observe node shoudl work 1`] = `
   </div>
 </article>
 `;
+
+exports[`Observe node should place later nodes in right order 1`] = `
+<article>
+  <div>
+    <div>
+      first
+      second
+      third
+    </div>
+    <div>
+      first
+      second
+      third
+    </div>
+    <div>
+      first
+      second
+      third
+    </div>
+  </div>
+</article>
+`;
