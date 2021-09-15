@@ -4,8 +4,6 @@ exports[`Test should match snapshot 1`] = `
 <div>
   <div>
     Route
-    
-    
   </div>
 </div>
 `;
@@ -14,8 +12,6 @@ exports[`Test should match snapshot 2`] = `
 <div>
   <div>
     Route
-    
-    
   </div>
 </div>
 `;
@@ -23,13 +19,10 @@ exports[`Test should match snapshot 2`] = `
 exports[`Test should match snapshot 3`] = `
 <div>
   <div>
-    
     <div>
       Param id: 41
       Foobar2
-      
     </div>
-    
   </div>
 </div>
 `;
@@ -37,13 +30,11 @@ exports[`Test should match snapshot 3`] = `
 exports[`Test should match snapshot 4`] = `
 <div>
   <div>
-    
     <div>
       Param id: 42
       Foobar2
       Match
     </div>
-    
   </div>
 </div>
 `;
@@ -51,8 +42,6 @@ exports[`Test should match snapshot 4`] = `
 exports[`Test should match snapshot 5`] = `
 <div>
   <div>
-    
-    
     Fallback
   </div>
 </div>

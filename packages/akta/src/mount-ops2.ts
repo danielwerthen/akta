@@ -1,16 +1,24 @@
 import {
   combineLatest,
-  filter,
+  firstValueFrom,
   isObservable,
   Observable,
   of,
-  switchMap,
-  tap,
+  ReplaySubject,
+  Subscription,
 } from 'rxjs';
-import { elementsDependency, teardownDependency } from './dependencies';
+import { switchMap, take, tap, filter, mapTo } from 'rxjs/operators';
+import { jsx } from './jsx-runtime';
+import {
+  elementsDependency,
+  teardownDependency,
+  useTeardown,
+  dependecyContext,
+} from './dependencies';
 import { DependencyMap } from './dependency-map';
 import { callComponent } from './dom-ops';
-import { AktaNode, isAktaElement } from './types';
+import { AktaNode, AktaPreparedComponent, isAktaElement } from './types';
+import { mountElement, unmountElement } from './element-ops';
 
 type RecNode = null | ChildNode | RecNode[];
 
@@ -30,6 +38,7 @@ function attach(
   } else {
     initial(item);
   }
+  mountElement(item);
   return item;
 }
 
@@ -54,8 +63,11 @@ function* getPrev(indicies: number[]) {
   if (last === undefined) {
     return;
   }
-  while (!last) {
+  while (last === 0) {
     last = indicies.pop();
+    if (last === undefined) {
+      return;
+    }
   }
   indicies.push(last - 1);
   yield indicies;
@@ -80,6 +92,7 @@ function getLastChild(node: RecNode): ChildNode | null {
 
 function getSibling(items: RecNode[], indicies: number[]): ChildNode | null {
   const gen = getPrev([...indicies]);
+
   do {
     const { done, value } = gen.next();
     if (done || !value) {
@@ -99,18 +112,10 @@ function getSibling(items: RecNode[], indicies: number[]): ChildNode | null {
     }
   } while (true);
 }
-export type LazyAttacherOptions = {
-  onUnmount?: (node: ChildNode) => void;
-  onMount?: (node: ChildNode) => void;
-};
 
 export class LazyAttacher {
   private nodes: RecNode[] = [];
   private initial?: (node: ChildNode) => void;
-  options: LazyAttacherOptions;
-  constructor(options: LazyAttacherOptions) {
-    this.options = options;
-  }
 
   private _unmount(node: RecNode) {
     if (!this.initial || !node) {
@@ -121,9 +126,7 @@ export class LazyAttacher {
       return;
     }
     node.remove();
-    if (this.options.onUnmount) {
-      this.options.onUnmount(node);
-    }
+    unmountElement(node);
   }
   private _mount(node: ChildNode, indicies: number[]) {
     if (!this.initial) {
@@ -135,9 +138,7 @@ export class LazyAttacher {
     } else {
       this.initial(node);
     }
-    if (this.options.onMount) {
-      this.options.onMount(node);
-    }
+    mountElement(node);
   }
 
   attach(node: ChildNode | null, indicies: number[]) {
@@ -221,7 +222,7 @@ export function observeNode(
       for (var key in props) {
         if (key === 'children') {
           const children = props[key] as AktaNode;
-          childAttacher = new LazyAttacher(attacher.options);
+          childAttacher = new LazyAttacher();
           const observable = observeNode(children, deps, childAttacher);
           if (observable) {
             observables.push(observable.pipe(filter(onlyFirst)));
@@ -248,9 +249,26 @@ export function observeNode(
           attacher.attach(element, idx ?? [0]);
         })
       );
+    } else if (type === AktaPreparedComponent) {
+      const innerAttacher = props.attacher as LazyAttacher;
+      const observable = props.observable as Observable<unknown>;
+      if (!observable) {
+        innerAttacher.activate(node => {
+          attacher.attach(node, idx ?? [0]);
+        });
+        return;
+      } else {
+        return observable.pipe(
+          tap(() => {
+            innerAttacher.activate(node => {
+              attacher.attach(node, idx ?? [0]);
+            });
+          })
+        );
+      }
     } else {
       const [element, nextDeps] = callComponent(type, props, deps);
-      const observable = observeNode(element, deps, attacher, idx);
+      const observable = observeNode(element, nextDeps, attacher, idx);
 
       const fns = nextDeps.peek(teardownDependency);
       if ((fns?.length ?? 0) < 1) {
@@ -284,4 +302,62 @@ export function observeNode(
     );
     return;
   }
+}
+
+export function usePrepare(element: AktaNode): Promise<AktaNode> {
+  const dependencies = dependecyContext.getContext();
+
+  const attacher = new LazyAttacher();
+  const children = observeNode(element, dependencies, attacher);
+  if (isObservable(children)) {
+    const subject = new ReplaySubject<ChildNode>(1);
+    const sub = children.subscribe(subject);
+    useTeardown(() => sub.unsubscribe());
+    return firstValueFrom(subject).then(() => {
+      return jsx(AktaPreparedComponent, {
+        attacher,
+        observable: subject.asObservable(),
+      });
+    });
+  }
+  return Promise.resolve(jsx(AktaPreparedComponent, { attacher }));
+}
+
+export function usePreparer(): (
+  element: AktaNode
+) => [AktaNode, Observable<void> | null] {
+  const dependencies = dependecyContext.getContext();
+  const subscriptions: Subscription[] = [];
+  useTeardown(() => {
+    subscriptions.forEach(sub => sub.unsubscribe());
+  });
+  return (element: AktaNode) => {
+    const attacher = new LazyAttacher();
+    const children = observeNode(element, dependencies, attacher);
+    if (isObservable(children)) {
+      const subject = new ReplaySubject<ChildNode>(1);
+      subscriptions.push(children.subscribe(subject));
+      return [
+        jsx(AktaPreparedComponent, {
+          attacher,
+          observable: subject.asObservable(),
+        }),
+        subject.pipe(take(1), mapTo(void 0)),
+      ];
+    }
+    return [jsx(AktaPreparedComponent, { attacher }), null];
+  };
+}
+
+export function mount(element: AktaNode, root: HTMLElement): () => void {
+  const attacher = new LazyAttacher();
+  const children = observeNode(element, new DependencyMap(), attacher);
+  if (isObservable(children)) {
+    const sub = children
+      .pipe(tap(() => attacher.activate(node => root.append(node))))
+      .subscribe();
+    return () => sub.unsubscribe();
+  }
+  attacher.activate(node => root.append(node));
+  return () => void 0;
 }

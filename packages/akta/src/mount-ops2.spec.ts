@@ -4,29 +4,19 @@ import { jsx } from './jsx-runtime';
 import { LazyAttacher, observeNode } from './mount-ops2';
 
 describe('Mount ops 2', () => {
-  const onMount = jest.fn();
-  const onUnmount = jest.fn();
-  let attacher = new LazyAttacher({
-    onMount,
-    onUnmount,
-  });
+  let attacher = new LazyAttacher();
   const root = document.createElement('article');
   beforeEach(() => {
-    onMount.mockClear();
-    onUnmount.mockClear();
     root.innerHTML = '';
-    attacher = new LazyAttacher({
-      onMount,
-      onUnmount,
-    });
+    attacher = new LazyAttacher();
   });
 
   it('should create deterministic structures', () => {
     attacher.attach(document.createElement('div'), [0]);
     attacher.attach(document.createTextNode('Foobar'), [1, 1]);
     attacher.attach(document.createTextNode('Baz'), [1, 0]);
-    attacher.attach(document.createElement('div'), [2]);
     attacher.activate(node => root.append(node));
+    attacher.attach(document.createElement('div'), [2]);
     expect(root).toMatchSnapshot();
   });
 });
@@ -34,7 +24,7 @@ describe('Mount ops 2', () => {
 describe('Observe node', () => {
   it('shoudl work', () => {
     const deps = new DependencyMap();
-    const attacher = new LazyAttacher({});
+    const attacher = new LazyAttacher();
     const root = document.createElement('article');
     function Component({ children }: any) {
       return children;

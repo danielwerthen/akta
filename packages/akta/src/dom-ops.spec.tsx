@@ -1,4 +1,4 @@
-import { mount } from './index';
+import { mount, usePrepare } from './index';
 import {
   BehaviorSubject,
   firstValueFrom,
@@ -9,7 +9,6 @@ import {
   toArray,
 } from 'rxjs';
 import { useTeardown } from './dependencies';
-import { usePrepare } from './dom-ops';
 import { jsx } from './jsx-runtime';
 import { AktaNode } from './types';
 
