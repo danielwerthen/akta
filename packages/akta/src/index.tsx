@@ -1,4 +1,4 @@
-export { mount, usePrepare, usePreparer } from './mount-ops2';
+export { mount, usePrepare, usePreparer } from './mount-ops';
 
 export * from './dependencies';
 export { createDependency, createLazyDependency } from './dependency-map';

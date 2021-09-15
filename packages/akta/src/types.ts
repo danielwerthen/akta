@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { LazyAttacher } from './mount-ops2';
+import { LazyAttacher } from './mount-ops';
 
 export type AktaElement<
   P extends { [key: string]: unknown } = { [key: string]: unknown }

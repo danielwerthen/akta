@@ -1,7 +1,7 @@
 import { from, isObservable, of } from 'rxjs';
 import { DependencyMap } from './dependency-map';
 import { jsx } from './jsx-runtime';
-import { LazyAttacher, observeNode, mount } from './mount-ops2';
+import { LazyAttacher, observeNode, mount } from './mount-ops';
 
 describe('Mount ops 2', () => {
   let attacher = new LazyAttacher();

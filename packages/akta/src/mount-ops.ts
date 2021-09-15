@@ -1,168 +1,175 @@
 import {
   combineLatest,
-  Observable,
-  tap,
+  firstValueFrom,
   isObservable,
-  filter,
-  switchMap,
+  Observable,
   of,
-  Subject,
+  ReplaySubject,
+  Subscription,
 } from 'rxjs';
+import { switchMap, take, tap, filter, mapTo } from 'rxjs/operators';
+import { jsx } from './jsx-runtime';
+import {
+  elementsDependency,
+  teardownDependency,
+  useTeardown,
+  dependecyContext,
+} from './dependencies';
 import { DependencyMap } from './dependency-map';
-import { produceElement } from './dom-ops';
+import { callComponent } from './dom-ops';
+import { AktaNode, AktaPreparedComponent, isAktaElement } from './types';
 import { mountElement, unmountElement } from './element-ops';
-import { AktaNode, isAktaElement } from './types';
 
-export class Attacher {
-  private live: boolean = false;
-  private nodes: (ChildNode | Attacher)[] = [];
-  private sibling: () => ChildNode | null;
-  private parent: HTMLElement;
-  private activator: Subject<void> | undefined;
-  private activators: Subject<void>[] = [];
-  constructor(
-    sibling: () => ChildNode | null,
-    parent: HTMLElement,
-    activator?: Subject<void>
-  ) {
-    this.sibling = sibling;
-    this.parent = parent;
-    this.activator = activator;
-    activator?.subscribe(() => {
-      this.activator = undefined;
-    });
+type RecNode = null | ChildNode | RecNode[];
+
+function attach(
+  sibling: ChildNode | null,
+  item: RecNode,
+  initial: (node: ChildNode) => void
+): ChildNode | null {
+  if (!item) {
+    return null;
+  } else if (Array.isArray(item)) {
+    return item.reduce<ChildNode | null>((sibling, node) => {
+      return attach(sibling, node, initial);
+    }, sibling);
+  } else if (sibling) {
+    sibling.after(item);
+  } else {
+    initial(item);
   }
-  remove(idx: number) {
-    if (this.nodes[idx]) {
-      const node = this.nodes[idx];
-      if (node instanceof Attacher) {
-        node.teardown();
-      } else if (this.live) {
-        unmountElement(node);
-        node.remove();
-      }
-    }
-    delete this.nodes[idx];
-  }
-  attach(node: ChildNode, idx: number) {
-    this.remove(idx);
-    this.nodes[idx] = node;
-    if (this.live) {
-      const sib = this.nodes[idx - 1] ?? this.sibling();
-      mountElement(node);
-      if (sib instanceof Attacher) {
-        sib.appendAfter(node);
-      } else if (sib) {
-        if (!sib.parentNode) {
-          throw new Error('Activation out of order');
-        }
-        sib.after(node);
-      } else {
-        const p = this.parent;
-        if (p.childNodes.length > 0) {
-          p.firstChild?.before(node);
-        } else {
-          p.appendChild(node);
-        }
-      }
-    }
-  }
-  private appendAfter(node: ChildNode) {
-    if (this.live) {
-      const item = this.nodes[this.nodes.length];
-      if (item instanceof Attacher) {
-        item.appendAfter(node);
-      } else {
-        item.after(node);
-      }
+  mountElement(item);
+  return item;
+}
+
+function getNode(items: RecNode[], indicies: number[]) {
+  let nodes = items;
+  const lastPos = indicies.length - 1;
+  for (let i = 0; i < lastPos; i++) {
+    const item = nodes[indicies[i]];
+    if (!item) {
+      return null;
+    } else if (Array.isArray(item)) {
+      nodes = item;
     } else {
-      const sib = this.sibling();
-      if (sib) {
-        sib.after(node);
-      }
-      const root = this.parent;
-      root.appendChild(node);
+      return item;
     }
   }
-  private getLastNode(): ChildNode | null {
-    if (this.live) {
-      const item = this.nodes[this.nodes.length];
-      if (item instanceof Attacher) {
-        return item.getLastNode();
-      } else {
-        return item;
-      }
-    }
-    return this.sibling();
+  return nodes[indicies[lastPos]] ?? null;
+}
+
+function* getPrev(indicies: number[]) {
+  let last = indicies.pop();
+  if (last === undefined) {
+    return;
   }
-  private _activate() {
-    this.live = true;
-    for (let i = 0; i < this.nodes.length; i++) {
-      const node = this.nodes[i];
-      if (!node || node instanceof Attacher) {
+  while (last === 0) {
+    last = indicies.pop();
+    if (last === undefined) {
+      return;
+    }
+  }
+  indicies.push(last - 1);
+  yield indicies;
+}
+
+function getLastChild(node: RecNode): ChildNode | null {
+  if (!node) {
+    return null;
+  }
+  if (Array.isArray(node)) {
+    for (let i = node.length - 1; i >= 0; i--) {
+      const val = getLastChild(node[i]);
+      if (!val) {
         continue;
       }
-      mountElement(node);
-      const sib = this.nodes[i - 1] ?? this.sibling();
-      if (sib instanceof Attacher) {
-        sib.appendAfter(node);
-      } else if (sib) {
-        if (!sib.parentNode) {
-          throw new Error('Activation out of order');
-        }
-        sib.after(node);
-      } else {
-        const p = this.parent;
-        if (p.childNodes.length > 0) {
-          p.firstChild?.before(node);
-        } else {
-          p.appendChild(node);
-        }
-      }
+      return val;
     }
-    for (let i = 0; i < this.activators.length; i++) {
-      this.activators[i].complete();
-    }
+    return null;
   }
-  activate() {
-    if (this.activator) {
-      this.activator.subscribe({ complete: () => this._activate() });
+  return node;
+}
+
+function getSibling(items: RecNode[], indicies: number[]): ChildNode | null {
+  const gen = getPrev([...indicies]);
+
+  do {
+    const { done, value } = gen.next();
+    if (done || !value) {
+      return null;
+    }
+    const node = getNode(items, value);
+    if (!node) {
+      continue;
+    } else if (Array.isArray(node)) {
+      const lastChild = getLastChild(node);
+      if (!lastChild) {
+        continue;
+      }
+      return lastChild;
     } else {
-      this._activate();
+      return node;
     }
+  } while (true);
+}
+
+export class LazyAttacher {
+  private nodes: RecNode[] = [];
+  private initial?: (node: ChildNode) => void;
+
+  private _unmount(node: RecNode) {
+    if (!this.initial || !node) {
+      return;
+    }
+    if (Array.isArray(node)) {
+      node.forEach(item => this._unmount(item));
+      return;
+    }
+    node.remove();
+    unmountElement(node);
   }
-  branch(idx: number): Attacher {
-    this.remove(idx);
-    const activator = new Subject<void>();
-    this.activators.push(activator);
-    return (this.nodes[idx] = new Attacher(
-      () => {
-        for (let i = idx - 1; i >= 0; i++) {
-          const node = this.nodes[i];
-          if (node instanceof Attacher) {
-            const sib = node.getLastNode();
-            if (sib) {
-              return sib;
-            }
-            continue;
-          }
-          return node;
-        }
-        return null;
-      },
-      this.parent,
-      this.live ? undefined : activator
-    ));
+  private _mount(node: ChildNode, indicies: number[]) {
+    if (!this.initial) {
+      return;
+    }
+    const sibling = getSibling(this.nodes, indicies);
+    if (sibling) {
+      sibling.after(node);
+    } else {
+      this.initial(node);
+    }
+    mountElement(node);
   }
-  teardown() {
-    let node: ChildNode | Attacher | undefined;
-    while ((node = this.nodes.pop())) {
-      if (node instanceof Attacher) {
-        node.teardown();
-      } else if (this.live) {
-        node.remove();
+
+  attach(node: ChildNode | null, indicies: number[]) {
+    let nodes = this.nodes;
+    const lastPos = indicies.length - 1;
+    for (let i = 0; i < lastPos; i++) {
+      const item = nodes[indicies[i]];
+      if (!item) {
+        nodes = nodes[indicies[i]] = [];
+      } else if (Array.isArray(item)) {
+        nodes = item;
+      } else {
+        this._unmount(item);
+        nodes = nodes[indicies[i]] = [];
       }
     }
+    const old = nodes[indicies[lastPos]];
+    if (old) {
+      this._unmount(old);
+    }
+    if (!node) {
+      delete nodes[indicies[lastPos]];
+    } else {
+      nodes[indicies[lastPos]] = node;
+      this._mount(node, indicies);
+    }
+  }
+
+  activate(initial: (node: ChildNode) => void) {
+    this.initial = initial;
+    attach(null, this.nodes, initial);
   }
 }
 
@@ -170,75 +177,195 @@ function onlyFirst(_value: unknown, idx: number) {
   return idx === 0;
 }
 
-export function attachChildren(
-  root: HTMLElement | Attacher,
-  item: AktaNode,
+export function observeNode(
+  node: AktaNode,
   deps: DependencyMap,
-  index?: number
+  attacher: LazyAttacher,
+  idx?: number[]
 ): Observable<unknown> | void {
-  let returnValue: Observable<unknown> | void = void 0;
-  const attacher =
-    root instanceof Attacher ? root : new Attacher(() => null, root);
-  try {
-    if (!item) {
-      const node = document.createTextNode('');
-      attacher.attach(node, index ?? 0);
-    } else if (typeof item === 'string') {
-      const node = document.createTextNode(item);
-      attacher.attach(node, index ?? 0);
-    } else if (Array.isArray(item)) {
-      const branch =
-        typeof index === 'number' ? attacher.branch(index) : attacher;
-      const observables = item
-        .map((child, idx) => {
-          return attachChildren(branch, child, deps, idx);
-        })
-        .filter<Observable<unknown>>(
-          (item: unknown): item is Observable<unknown> => !!item
-        );
+  if (!node) {
+    attacher.attach(null, idx ?? [0]);
+    return;
+  }
+  if (Array.isArray(node)) {
+    const items = node
+      .map((item, i) => {
+        return observeNode(item, deps, attacher, idx ? [...idx, i] : [i]);
+      })
+      .filter(function isObs(node): node is Observable<void> {
+        return isObservable(node);
+      });
+    if (items.length === 0) {
+      return;
+    } else if (items.length === 1) {
+      return items[0];
+    }
+    return combineLatest(items).pipe(filter(onlyFirst));
+  } else if (isObservable(node)) {
+    return node.pipe(
+      switchMap(innerNode => {
+        return observeNode(innerNode, deps, attacher, idx) || of(void 0);
+      }),
+      filter(onlyFirst)
+    );
+  } else if (typeof node === 'string') {
+    attacher.attach(document.createTextNode(node), idx ?? [0]);
+    return;
+  } else if (isAktaElement(node)) {
+    const { type, props } = node;
+    if (typeof type === 'string') {
+      const element = document.createElement(type);
+      const observables: Observable<unknown>[] = [];
+      let childAttacher: null | LazyAttacher = null;
+
+      const elements = deps.peek(elementsDependency);
+      for (var key in props) {
+        if (key === 'children') {
+          const children = props[key] as AktaNode;
+          childAttacher = new LazyAttacher();
+          const observable = observeNode(children, deps, childAttacher);
+          if (observable) {
+            observables.push(observable.pipe(filter(onlyFirst)));
+          }
+        } else {
+          const observable = elements[type][key](element, props[key]);
+          if (observable) {
+            observables.push(observable.pipe(filter(onlyFirst)));
+          }
+        }
+      }
       if (observables.length < 1) {
-        branch.activate();
+        if (childAttacher) {
+          childAttacher.activate(node =>
+            element.insertBefore(node, element.firstChild)
+          );
+        }
+        attacher.attach(element, idx ?? [0]);
         return;
       }
-      return (returnValue = combineLatest(observables).pipe(
+      return combineLatest(observables).pipe(
         tap(() => {
-          branch.activate();
-        })
-      ));
-    } else if (isObservable(item)) {
-      return (returnValue = item.pipe(
-        switchMap(child => {
-          const obs = attachChildren(attacher, child, deps, index);
-          if (!obs) {
-            return of(void 0);
+          if (childAttacher) {
+            childAttacher.activate(node =>
+              element.insertBefore(node, element.firstChild)
+            );
           }
-          return obs;
-        }),
-        filter(onlyFirst)
-      ));
-    } else if (isAktaElement(item)) {
-      const obs = produceElement(item, deps);
-      if (isObservable(obs)) {
-        return (returnValue = obs.pipe(
-          tap(child => {
-            attacher.attach(child, index ?? 0);
-          }),
-          filter(onlyFirst)
-        ));
+          attacher.attach(element, idx ?? [0]);
+        })
+      );
+    } else if (type === AktaPreparedComponent) {
+      const innerAttacher = props.attacher as LazyAttacher;
+      const observable = props.observable as Observable<unknown>;
+      if (!observable) {
+        innerAttacher.activate(node => {
+          attacher.attach(node, idx ?? [0]);
+        });
+        return;
       } else {
-        attacher.attach(obs, index ?? 0);
+        return observable.pipe(
+          tap(() => {
+            innerAttacher.activate(node => {
+              attacher.attach(node, idx ?? [0]);
+            });
+          })
+        );
       }
     } else {
-      const node = document.createTextNode(item + '');
-      attacher.attach(node, index ?? 0);
-    }
-  } finally {
-    if (!returnValue) {
-      if (attacher !== root) {
-        attacher.activate();
+      const [element, nextDeps] = callComponent(type, props, deps);
+      const observable = observeNode(element, nextDeps, attacher, idx);
+
+      const fns = nextDeps.peek(teardownDependency);
+      if ((fns?.length ?? 0) < 1) {
+        return observable;
       }
-    } else {
-      return returnValue.pipe(tap(() => attacher.activate()));
+      return new Observable(sub => {
+        sub.add(() => {
+          if (fns) {
+            fns.forEach(item => item());
+          }
+        });
+        if (isObservable(observable)) {
+          return observable.subscribe({
+            next: val => {
+              sub.next(val);
+            },
+            error: val => {
+              sub.error(val);
+            },
+            complete: undefined,
+          });
+        }
+        sub.next(observable);
+        return;
+      });
     }
+  } else {
+    attacher.attach(
+      document.createTextNode(Object.prototype.toString.call(node)),
+      idx ?? [0]
+    );
+    return;
   }
+}
+
+export function usePrepare(element: AktaNode): Promise<AktaNode> {
+  const dependencies = dependecyContext.getContext();
+
+  const attacher = new LazyAttacher();
+  const children = observeNode(element, dependencies, attacher);
+  if (isObservable(children)) {
+    const subject = new ReplaySubject<ChildNode>(1);
+    const sub = children.subscribe(subject);
+    useTeardown(() => sub.unsubscribe());
+    return firstValueFrom(subject).then(() => {
+      return jsx(AktaPreparedComponent, {
+        attacher,
+        observable: subject.asObservable(),
+      });
+    });
+  }
+  return Promise.resolve(jsx(AktaPreparedComponent, { attacher }));
+}
+
+export function usePreparer(): (
+  element: AktaNode
+) => [AktaNode, Observable<void> | null] {
+  const dependencies = dependecyContext.getContext();
+  const subscriptions: Subscription[] = [];
+  useTeardown(() => {
+    subscriptions.forEach(sub => sub.unsubscribe());
+  });
+  return (element: AktaNode) => {
+    const attacher = new LazyAttacher();
+    const children = observeNode(element, dependencies, attacher);
+    if (isObservable(children)) {
+      const subject = new ReplaySubject<ChildNode>(1);
+      subscriptions.push(children.subscribe(subject));
+      return [
+        jsx(AktaPreparedComponent, {
+          attacher,
+          observable: subject.asObservable(),
+        }),
+        subject.pipe(take(1), mapTo(void 0)),
+      ];
+    }
+    return [jsx(AktaPreparedComponent, { attacher }), null];
+  };
+}
+
+export function mount(element: AktaNode, root: HTMLElement): () => void {
+  const attacher = new LazyAttacher();
+  const children = observeNode(element, new DependencyMap(), attacher);
+  if (isObservable(children)) {
+    const sub = children
+      .pipe(
+        tap(() =>
+          attacher.activate(node => root.insertBefore(node, root.firstChild))
+        )
+      )
+      .subscribe();
+    return () => sub.unsubscribe();
+  }
+  attacher.activate(node => root.insertBefore(node, root.firstChild));
+  return () => void 0;
 }
