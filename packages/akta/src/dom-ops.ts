@@ -28,50 +28,62 @@ export function callComponent<PROPS>(
 ): [ReturnType<AktaComponent<PROPS>>, DependencyMap] {
   const deps = parentDeps.branch();
   deps.provide(teardownDependency, []);
-  const element = dependecyContext.setContext(() => {
-    return component(props);
-  }, deps);
-  if (isObservable(element)) {
-    return [element, deps];
-  }
-  if (isGenerator(element)) {
-    const continuation = lazy();
-    deps.provide(continuationDependency, continuation);
-    const generated = dependecyContext.setContext(() => {
-      return element.next();
-    }, deps);
-    const observable = new Observable<AktaNode>(subscriber => {
-      Promise.resolve(generated).then(({ value, done }) => {
-        subscriber.next(value);
-        if (done) {
-          subscriber.complete();
-          return;
-        }
-        let isComplete = false;
-        continuation.define(input => {
-          if (isComplete) {
-            return of();
-          }
-          const generated = dependecyContext.setContext(() => {
-            return element.next(input);
-          }, deps);
-          return from(Promise.resolve(generated)).pipe(
-            map(({ value, done }) => {
+  try {
+    dependecyContext.setContextUnsafe(deps);
+    const element = component(props);
+    if (!element) {
+      return [null, deps];
+    }
+    if (isObservable(element)) {
+      return [element, deps];
+    }
+    if (isGenerator(element)) {
+      const continuation = lazy();
+      deps.provide(continuationDependency, continuation);
+      try {
+        dependecyContext.setContextUnsafe(deps);
+        const generated = element.next();
+        const observable = new Observable<AktaNode>(subscriber => {
+          Promise.resolve(generated).then(({ value, done }) => {
+            subscriber.next(value);
+            if (done) {
+              subscriber.complete();
+              return;
+            }
+            let isComplete = false;
+            continuation.define(input => {
               if (isComplete) {
-                return;
+                return of();
               }
-              subscriber.next(value);
-              if (done) {
-                isComplete = true;
-                subscriber.complete();
-                return;
+              try {
+                dependecyContext.setContextUnsafe(deps);
+                const generated = element.next(input);
+                return from(Promise.resolve(generated)).pipe(
+                  map(({ value, done }) => {
+                    if (isComplete) {
+                      return;
+                    }
+                    subscriber.next(value);
+                    if (done) {
+                      isComplete = true;
+                      subscriber.complete();
+                      return;
+                    }
+                  })
+                );
+              } finally {
+                dependecyContext.resetContextUnsafe();
               }
-            })
-          );
+            });
+          });
         });
-      });
-    });
-    return [observable, deps];
+        return [observable, deps];
+      } finally {
+        dependecyContext.resetContextUnsafe();
+      }
+    }
+    return [element, deps];
+  } finally {
+    dependecyContext.resetContextUnsafe();
   }
-  return [element, deps];
 }

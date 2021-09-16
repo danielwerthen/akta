@@ -188,19 +188,24 @@ export function observeNode(
     return;
   }
   if (Array.isArray(node)) {
-    const items = node
-      .map((item, i) => {
-        return observeNode(item, deps, attacher, idx ? [...idx, i] : [i]);
-      })
-      .filter(function isObs(node): node is Observable<void> {
-        return isObservable(node);
-      });
-    if (items.length === 0) {
-      return;
-    } else if (items.length === 1) {
-      return items[0];
+    let observables: Observable<unknown>[] = [];
+    for (let i = 0; i < node.length; i++) {
+      const item = observeNode(
+        node[i],
+        deps,
+        attacher,
+        idx ? [...idx, i] : [i]
+      );
+      if (item) {
+        observables.push(item);
+      }
     }
-    return combineLatest(items).pipe(filter(onlyFirst));
+    if (observables.length === 0) {
+      return;
+    } else if (observables.length === 1) {
+      return observables[0];
+    }
+    return combineLatest(observables).pipe(filter(onlyFirst));
   } else if (isObservable(node)) {
     return node.pipe(
       switchMap(innerNode => {

@@ -9,6 +9,12 @@ export function createSyncContext<T>() {
         stack.shift();
       }
     },
+    setContextUnsafe(ctx: T) {
+      stack.unshift(ctx);
+    },
+    resetContextUnsafe() {
+      stack.shift();
+    },
     getContext(): T {
       return stack[0];
     },
