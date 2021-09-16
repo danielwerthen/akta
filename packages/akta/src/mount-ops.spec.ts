@@ -68,4 +68,30 @@ describe('Observe node', () => {
     );
     expect(root).toMatchSnapshot();
   });
+
+  it('should handle case 4', () => {
+    const root = document.createElement('article');
+    function Component() {
+      return 'comp';
+    }
+    mount(
+      jsx('div', {
+        children: [
+          jsx('div', {
+            children: [
+              jsx('div', {
+                children: [
+                  jsx('div', {
+                    children: [jsx(Component, {})],
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+      root
+    );
+    expect(root).toMatchSnapshot();
+  });
 });
