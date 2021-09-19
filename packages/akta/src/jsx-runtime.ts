@@ -2,11 +2,10 @@
 
 import { AktaComponent, AktaElement, AktaElementType } from './types';
 
-export function jsx<P extends {}, T extends string | AktaComponent<P>>(
-  type: T,
-  props: P,
-  maybeKey?: string
-): AktaElement<P> {
+export function jsx<
+  P extends {},
+  T extends string | AktaComponent<P> | undefined
+>(type: T, props: P, maybeKey?: string): AktaElement<P> {
   return {
     $$type: AktaElementType,
     type,

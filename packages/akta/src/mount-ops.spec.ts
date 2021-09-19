@@ -121,7 +121,7 @@ describe('Observe node', () => {
           jsx('h2', {
             children: 'Header',
           }),
-          jsx(undefined as any, {
+          jsx(undefined, {
             children: [jsx(Comp, {}), jsx(Comp, {})],
           }),
           jsx('div', {

@@ -5,7 +5,7 @@ export type AktaElement<
   P extends { [key: string]: unknown } = { [key: string]: unknown }
 > = {
   $$type: Symbol;
-  type: string | AktaComponent<P>;
+  type: string | AktaComponent<P> | undefined;
   props: P;
   key: string | undefined;
 };
