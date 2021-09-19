@@ -1,7 +1,7 @@
-import { from, isObservable, of } from 'rxjs';
+import { from, of } from 'rxjs';
 import { DependencyMap } from './dependency-map';
 import { jsx } from './jsx-runtime';
-import { LazyAttacher, observeNode, mount } from './mount-ops';
+import { LazyAttacher, observeNode, mount, NodeObserver } from './mount-ops';
 
 describe('Mount ops 2', () => {
   let attacher = new LazyAttacher();
@@ -29,22 +29,20 @@ describe('Observe node', () => {
     function Component({ children }: any) {
       return children;
     }
-    const result = observeNode(
+    const observer = new NodeObserver();
+    observeNode(
       of(
         jsx('div', {
           children: ['baz', jsx(Component, { children: 'test' }), of('foobar')],
         })
       ),
       deps,
-      attacher
+      attacher,
+      observer
     );
-    if (isObservable(result)) {
-      result.subscribe(() => {
-        attacher.activate(node => root.append(node));
-      });
-    } else {
+    observer.observe().subscribe(() => {
       attacher.activate(node => root.append(node));
-    }
+    });
     expect(root).toMatchSnapshot();
   });
 
@@ -71,27 +69,36 @@ describe('Observe node', () => {
 
   it('should handle case 4', () => {
     const root = document.createElement('article');
-    function Component() {
+    function Daniel() {
+      throw new Error('Foob');
       return 'comp';
     }
-    mount(
-      jsx('div', {
-        children: [
-          jsx('div', {
-            children: [
-              jsx('div', {
-                children: [
-                  jsx('div', {
-                    children: [jsx(Component, {})],
-                  }),
-                ],
-              }),
-            ],
-          }),
-        ],
-      }),
-      root
-    );
-    expect(root).toMatchSnapshot();
+    try {
+      mount(
+        jsx('div', {
+          children: [
+            jsx('div', {
+              children: [
+                jsx('div', {
+                  children: [
+                    jsx('div', {
+                      children: [jsx(Daniel, {})],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        root
+      );
+      throw new Error('Should not end up here');
+    } catch (e) {
+      const error = e as Error;
+      const stackDepth = ((error.stack || '').match(/at observeNode/g) || [])
+        .length;
+      expect(stackDepth).toEqual(1);
+      expect(root).toMatchSnapshot();
+    }
   });
 });

@@ -19,19 +19,7 @@ exports[`Observe node shoudl work 1`] = `
 </article>
 `;
 
-exports[`Observe node should handle case 4 1`] = `
-<article>
-  <div>
-    <div>
-      <div>
-        <div>
-          comp
-        </div>
-      </div>
-    </div>
-  </div>
-</article>
-`;
+exports[`Observe node should handle case 4 1`] = `<article />`;
 
 exports[`Observe node should place later nodes in right order 1`] = `
 <article>

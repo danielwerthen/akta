@@ -22,7 +22,7 @@ function isGenerator(
 }
 
 export function callComponent<PROPS>(
-  component: AktaComponent<PROPS>,
+  runComponent: AktaComponent<PROPS>,
   props: PROPS,
   parentDeps: DependencyMap
 ): [ReturnType<AktaComponent<PROPS>>, DependencyMap] {
@@ -30,7 +30,7 @@ export function callComponent<PROPS>(
   deps.provide(teardownDependency, []);
   try {
     dependecyContext.setContextUnsafe(deps);
-    const element = component(props);
+    const element = runComponent(props);
     if (!element) {
       return [null, deps];
     }
