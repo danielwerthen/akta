@@ -151,6 +151,14 @@ describe('Observe node', () => {
     momo.next('Foobar2');
     expect(root).toMatchSnapshot();
   });
+  it('Should handle events', () => {
+    const root = document.createElement('article');
+    const fn = jest.fn();
+    mount(jsx('div', { onClick: fn, children: 'body' }), root);
+    (root.childNodes[0] as HTMLElement).click();
+    expect(fn.mock.calls.length).toBe(1);
+    expect(root).toMatchSnapshot();
+  });
 });
 
 describe('getPrev', () => {

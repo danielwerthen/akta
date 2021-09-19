@@ -78,11 +78,19 @@ function standardEventMethod<T extends HTMLElement>(
 ): AttributeMethod {
   const eventName = key.substr(2).toLowerCase();
   return function(element: T, value: unknown) {
-    const subject = value as Subject<Event>;
+    const subject = value as Subject<Event> | ((e: Event) => void);
     return new Observable(sub => {
       sub.next();
+      if (typeof subject === 'function') {
+        element.addEventListener(eventName, subject, false);
+        return () => element.removeEventListener(eventName, subject);
+      }
       function eventHandler(e: Event) {
-        subject.next(e);
+        if (typeof subject === 'function') {
+          subject(e);
+        } else {
+          subject.next(e);
+        }
       }
       element.addEventListener(eventName, eventHandler, false);
       return () => {

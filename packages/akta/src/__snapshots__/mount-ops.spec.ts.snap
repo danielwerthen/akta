@@ -9,6 +9,14 @@ exports[`Mount ops 2 should create deterministic structures 1`] = `
 </article>
 `;
 
+exports[`Observe node Should handle events 1`] = `
+<article>
+  <div>
+    body
+  </div>
+</article>
+`;
+
 exports[`Observe node shoudl work 1`] = `
 <article>
   <div>
