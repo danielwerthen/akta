@@ -25,7 +25,6 @@ import {
   map,
   tap,
   mapTo,
-  startWith,
   switchMap,
   take,
 } from 'rxjs/operators';
@@ -188,7 +187,6 @@ export function Route({
       }
       return of(null);
     }),
-    startWith(null),
     catchError(e => {
       console.error(e);
       return of(<p>Error: {e}</p>);

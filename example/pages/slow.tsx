@@ -7,7 +7,7 @@ export function Slow() {
       <h1>Slow page</h1>
       {of('Slow value').pipe(
         delay(3000),
-        finalize(() => console.log('Finally'))
+        finalize(() => console.log('Slow page final'))
       )}
     </div>
   );

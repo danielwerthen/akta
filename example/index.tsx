@@ -1,4 +1,4 @@
-import { mount } from 'akta';
+import { AktaNode, mount } from 'akta';
 import { Route, Router, Link } from 'akta-router';
 import Index from './pages/index';
 import { Slow } from './pages/slow';
@@ -21,15 +21,15 @@ function App() {
       </div>
       <div>
         <h2>Links</h2>
-        <Link href="/">Index page</Link>
-        <Link href="/slow">Slow page</Link>
-        <>
-          <p>Daniel</p>
-          <p>Foobar</p>
-        </>
-        <span>
+        <div>
+          <Link href="/">Index page</Link>
+        </div>
+        <div>
+          <Link href="/slow">Slow page</Link>
+        </div>
+        <div>
           <Link href="/foobar">Foobar page</Link>
-        </span>
+        </div>
       </div>
     </Router>
   );
