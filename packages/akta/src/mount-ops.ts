@@ -190,8 +190,8 @@ export class NodeObserver {
       const cbs = this.initCallbacks;
       obs = obs.pipe(
         tap(() => {
-          for (let cb of cbs) {
-            cb();
+          for (let i = cbs.length - 1; i > -1; i--) {
+            cbs[i]();
           }
         })
       );
@@ -290,6 +290,9 @@ export function observeNode(
             attacher.attach(node, idx ?? [0]);
           });
         });
+      } else if (!type) {
+        const children = props.children as AktaNode;
+        addToQueue(children, deps, attacher, observer, idx);
       } else {
         const [element, nextDeps] = callComponent(type, props, deps);
         addToQueue(element, nextDeps, attacher, observer, idx);

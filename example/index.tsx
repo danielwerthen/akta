@@ -23,7 +23,13 @@ function App() {
         <h2>Links</h2>
         <Link href="/">Index page</Link>
         <Link href="/slow">Slow page</Link>
-        <Link href="/foobar">Foobar page</Link>
+        <>
+          <p>Daniel</p>
+          <p>Foobar</p>
+        </>
+        <span>
+          <Link href="/foobar">Foobar page</Link>
+        </span>
       </div>
     </Router>
   );

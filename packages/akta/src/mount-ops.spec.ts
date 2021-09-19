@@ -101,4 +101,30 @@ describe('Observe node', () => {
       expect(root).toMatchSnapshot();
     }
   });
+
+  it('should handle fragments properly', () => {
+    const root = document.createElement('article');
+    function Comp() {
+      return jsx('div', {
+        children: ['test', 'foo'],
+      });
+    }
+    function App() {
+      return jsx('div', {
+        children: [
+          jsx('h2', {
+            children: 'Header',
+          }),
+          jsx(undefined as any, {
+            children: [jsx(Comp, {}), jsx(Comp, {})],
+          }),
+          jsx('div', {
+            children: 'after',
+          }),
+        ],
+      });
+    }
+    mount(jsx(App, {}), root);
+    expect(root).toMatchSnapshot();
+  });
 });

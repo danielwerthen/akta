@@ -21,6 +21,27 @@ exports[`Observe node shoudl work 1`] = `
 
 exports[`Observe node should handle case 4 1`] = `<article />`;
 
+exports[`Observe node should handle fragments properly 1`] = `
+<article>
+  <div>
+    <h2>
+      Header
+    </h2>
+    <div>
+      test
+      foo
+    </div>
+    <div>
+      test
+      foo
+    </div>
+    <div>
+      after
+    </div>
+  </div>
+</article>
+`;
+
 exports[`Observe node should place later nodes in right order 1`] = `
 <article>
   <div>
