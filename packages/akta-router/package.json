@@ -43,6 +43,9 @@
     "@types/jest": "^27.0.1"
   },
   "jest": {
-    "testEnvironment": "jsdom"
+    "testEnvironment": "jsdom",
+    "watchPathIgnorePatterns": [
+      "dist"
+    ]
   }
 }
