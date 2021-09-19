@@ -58,19 +58,22 @@ function getNode(items: RecNode[], indicies: number[]) {
   return nodes[indicies[lastPos]] ?? null;
 }
 
-function* getPrev(indicies: number[]) {
-  let last = indicies.pop();
-  if (last === undefined) {
-    return;
-  }
-  while (last === 0) {
-    last = indicies.pop();
+export function* getPrev(indicies: number[]) {
+  while (true) {
+    if (indicies.length < 1) {
+      return;
+    }
+    let last = indicies.pop();
     if (last === undefined) {
       return;
     }
+    if (last > 0) {
+      indicies.push(last - 1);
+      yield indicies;
+    } else if (last === 0) {
+      continue;
+    }
   }
-  indicies.push(last - 1);
-  yield indicies;
 }
 
 function getLastChild(node: RecNode): ChildNode | null {

@@ -22,6 +22,7 @@ exports[`Test should match snapshot 3`] = `
     <div>
       Param id: 41
       Foobar2
+      Match 41
     </div>
   </div>
 </div>
@@ -33,6 +34,7 @@ exports[`Test should match snapshot 4`] = `
     <div>
       Param id: 42
       Foobar2
+      Match 42
     </div>
   </div>
 </div>

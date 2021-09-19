@@ -1,7 +1,13 @@
-import { from, of } from 'rxjs';
+import { from, of, Subject } from 'rxjs';
 import { DependencyMap } from './dependency-map';
 import { jsx } from './jsx-runtime';
-import { LazyAttacher, observeNode, mount, NodeObserver } from './mount-ops';
+import {
+  getPrev,
+  LazyAttacher,
+  observeNode,
+  mount,
+  NodeObserver,
+} from './mount-ops';
 
 describe('Mount ops 2', () => {
   let attacher = new LazyAttacher();
@@ -126,5 +132,35 @@ describe('Observe node', () => {
     }
     mount(jsx(App, {}), root);
     expect(root).toMatchSnapshot();
+  });
+
+  it('should mount elements in correct order', () => {
+    const root = document.createElement('article');
+    const momo = new Subject();
+    function App() {
+      return jsx('div', {
+        children: [
+          of('Param id: 42'),
+          momo,
+          of(null),
+          from([null, 'Match 42']),
+        ],
+      });
+    }
+    mount(jsx(App, {}), root);
+    momo.next('Foobar2');
+    expect(root).toMatchSnapshot();
+  });
+});
+
+describe('getPrev', () => {
+  it('should generate indicies in the right order', () => {
+    const foo = getPrev([2, 3]);
+    expect(foo.next().value).toStrictEqual([2, 2]);
+    expect(foo.next().value).toStrictEqual([2, 1]);
+    expect(foo.next().value).toStrictEqual([2, 0]);
+    expect(foo.next().value).toStrictEqual([1]);
+    expect(foo.next().value).toStrictEqual([0]);
+    expect(foo.next().done).toBe(true);
   });
 });

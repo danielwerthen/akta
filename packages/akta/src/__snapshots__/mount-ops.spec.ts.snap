@@ -42,6 +42,16 @@ exports[`Observe node should handle fragments properly 1`] = `
 </article>
 `;
 
+exports[`Observe node should mount elements in correct order 1`] = `
+<article>
+  <div>
+    Param id: 42
+    Foobar2
+    Match 42
+  </div>
+</article>
+`;
+
 exports[`Observe node should place later nodes in right order 1`] = `
 <article>
   <div>

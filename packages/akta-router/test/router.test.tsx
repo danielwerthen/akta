@@ -33,6 +33,8 @@ describe('Test', () => {
             )
           )}
           {momo}
+          <Route path="/foobar/41">Match 41</Route>
+          <Route path="/foobar/42">Match 42</Route>
         </div>
       );
     }

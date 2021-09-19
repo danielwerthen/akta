@@ -26,6 +26,7 @@ import {
   tap,
   mapTo,
   switchMap,
+  startWith,
   take,
 } from 'rxjs/operators';
 import { createBrowserHistory, History, Location } from 'history';
@@ -187,6 +188,7 @@ export function Route({
       }
       return of(null);
     }),
+    startWith(null),
     catchError(e => {
       console.error(e);
       return of(<p>Error: {e}</p>);
