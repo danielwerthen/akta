@@ -33,7 +33,6 @@ describe('Test', () => {
             )
           )}
           {momo}
-          <Route path="/foobar/42">Match</Route>
         </div>
       );
     }
