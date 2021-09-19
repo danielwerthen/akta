@@ -329,7 +329,7 @@ export function usePrepare(element: AktaNode): Promise<AktaNode> {
 
 export function usePreparer(): (
   element: AktaNode
-) => [AktaNode, Observable<void> | null] {
+) => [AktaNode, Observable<void> | null, Subscription] {
   const dependencies = dependecyContext.getContext();
   const subscriptions: Subscription[] = [];
   useTeardown(() => {
@@ -340,13 +340,15 @@ export function usePreparer(): (
     const observer = new NodeObserver();
     observeNode(element, dependencies, attacher, observer);
     const subject = new ReplaySubject<void>(1);
-    subscriptions.push(observer.observe().subscribe(subject));
+    const subscription = observer.observe().subscribe(subject);
+    subscriptions.push(subscription);
     return [
       jsx(AktaPreparedComponent, {
         attacher,
         observable: subject.asObservable(),
       }),
       subject.pipe(take(1), mapTo(void 0)),
+      subscription,
     ];
   };
 }

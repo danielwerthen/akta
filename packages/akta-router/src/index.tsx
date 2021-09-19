@@ -9,6 +9,7 @@ import {
   usePreparer,
   useProvideDependency,
 } from 'akta';
+import { Akta } from 'akta/jsx-runtime';
 import {
   BehaviorSubject,
   forkJoin,
@@ -16,11 +17,13 @@ import {
   of,
   Subject,
   Subscriber,
+  Subscription,
 } from 'rxjs';
 import {
   catchError,
   distinctUntilChanged,
   map,
+  tap,
   mapTo,
   startWith,
   switchMap,
@@ -127,6 +130,7 @@ export function Route({
     matchedRoutes.value.delete(routeSymbol);
     matchedRoutes.next(matchedRoutes.value);
   });
+  let prevSubscription: Subscription;
   return loc.pipe(
     map(location => {
       const matched = matcher(location.pathname);
@@ -140,7 +144,7 @@ export function Route({
       if (matched) {
         matchedRoutes.value.add(routeSymbol);
         matchedRoutes.next(matchedRoutes.value);
-        const [node, promise] = prepare(children);
+        const [node, promise, sub] = prepare(children);
         if (Array.isArray(transitions)) {
           if (promise) {
             transitions.push(promise);
@@ -149,9 +153,19 @@ export function Route({
           return router.pipe(
             switchMap(rtr => rtr.conductor),
             take(1),
+            tap(() => {
+              if (prevSubscription) {
+                prevSubscription.unsubscribe();
+              }
+              prevSubscription = sub;
+            }),
             mapTo(node)
           );
         } else {
+          if (prevSubscription) {
+            prevSubscription.unsubscribe();
+          }
+          prevSubscription = sub;
           return of(node);
         }
       }
@@ -161,8 +175,16 @@ export function Route({
         return router.pipe(
           switchMap(rtr => rtr.conductor),
           take(1),
-          mapTo(null)
+          mapTo(null),
+          tap(() => {
+            if (prevSubscription) {
+              prevSubscription.unsubscribe();
+            }
+          })
         );
+      }
+      if (prevSubscription) {
+        prevSubscription.unsubscribe();
       }
       return of(null);
     }),
@@ -185,5 +207,20 @@ export function Fallback({ children }: FallbackProps) {
       return matched.size === 0 ? children : null;
     }),
     distinctUntilChanged()
+  );
+}
+
+export function Link({ href, children }: { href: string; children: AktaNode }) {
+  const ctx = useContext();
+  const onClick: Akta.MouseEventHandler<HTMLAnchorElement> = new Subject();
+  onClick.subscribe(e => {
+    e.preventDefault();
+    ctx.peek(routerDependency).history.push(href);
+  });
+
+  return (
+    <a href={href} onClick={onClick}>
+      {children}
+    </a>
   );
 }
