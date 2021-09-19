@@ -301,7 +301,9 @@ export function observeNode(
       }
     } else {
       attacher.attach(
-        document.createTextNode(Object.prototype.toString.call(node)),
+        document.createTextNode(
+          node.toString ? node.toString() : Object.prototype.toString.call(node)
+        ),
         idx ?? [0]
       );
     }
