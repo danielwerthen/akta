@@ -6,6 +6,7 @@ import {
   firstValueFrom,
   Observable,
   toArray,
+  mapTo,
 } from 'rxjs';
 import { DependencyMap } from './dependency-map';
 import { jsx } from './jsx-runtime';
@@ -15,6 +16,7 @@ import {
   observeNode,
   mount,
   NodeObserver,
+  usePreparer,
 } from './mount-ops';
 import { usePrepare } from './index';
 import { useTeardown } from './dependencies';
@@ -330,6 +332,45 @@ describe('DOM OPS', () => {
     }
     const unsub = mount(jsx(Comp, {}), root);
     expect(root).toMatchSnapshot();
+    unsub();
+  });
+
+  it('should handle array children', async () => {
+    const root = document.createElement('div');
+    const sub = new Subject();
+    function Comp({ children }: { children: AktaNode }) {
+      const prepare = usePreparer();
+      const [node] = prepare(sub.pipe(mapTo(children)));
+      return from([null, node]);
+    }
+    const unsub = mount(
+      jsx('div', {
+        children: [
+          null,
+          null,
+          jsx(Comp, {
+            children: [
+              jsx('p', { children: of('first') }),
+              jsx('p', { children: of('second') }),
+            ],
+          }),
+          jsx('div', {
+            children: [
+              jsx(Comp, {
+                children: jsx('h2', { children: 'test' }),
+              }),
+              jsx('p', {
+                children: 'test2',
+              }),
+            ],
+          }),
+        ],
+      }),
+      root
+    );
+    expect(root).toMatchSnapshot('min');
+    sub.next(4);
+    expect(root).toMatchSnapshot('full');
     unsub();
   });
 });

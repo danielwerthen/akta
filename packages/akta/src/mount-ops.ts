@@ -136,6 +136,9 @@ export class LazyAttacher {
       return;
     }
     const sibling = getSibling(this.nodes, indicies);
+    if (node.textContent === 'Extra') {
+      console.log(node, sibling);
+    }
     if (sibling) {
       sibling.after(node);
     } else {

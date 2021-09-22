@@ -17,6 +17,7 @@ function App() {
           <div>
             <p>Foobar</p>
           </div>
+          Extra
         </Route>
       </div>
       <div>

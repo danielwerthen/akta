@@ -145,6 +145,7 @@ export function Route({
         matchedRoutes.value.add(routeSymbol);
         matchedRoutes.next(matchedRoutes.value);
         const [node, promise, sub] = prepare(children);
+
         if (Array.isArray(transitions)) {
           if (promise) {
             transitions.push(promise);
