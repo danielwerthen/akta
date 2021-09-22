@@ -16,7 +16,7 @@ import {
   dependecyContext,
 } from './dependencies';
 import { DependencyMap } from './dependency-map';
-import { callComponent } from './dom-ops';
+import { callComponent } from './component-ops';
 import { AktaNode, AktaPreparedComponent, isAktaElement } from './types';
 import { mountElement, unmountElement } from './element-ops';
 
