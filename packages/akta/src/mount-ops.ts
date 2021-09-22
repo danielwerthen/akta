@@ -20,7 +20,7 @@ import { callComponent } from './component-ops';
 import { AktaNode, AktaPreparedComponent, isAktaElement } from './types';
 import { mountElement, unmountElement } from './element-ops';
 
-type RecNode = null | ChildNode | RecNode[];
+type RecNode = null | ChildNode | LazyAttacher | RecNode[];
 
 function attach(
   sibling: ChildNode | null,
@@ -33,7 +33,18 @@ function attach(
     return item.reduce<ChildNode | null>((sibling, node) => {
       return attach(sibling, node, initial);
     }, sibling);
+  } else if (item instanceof LazyAttacher) {
+    return item.activate(node => {
+      if (sibling) {
+        sibling.after(node);
+      } else {
+        initial(node);
+      }
+    });
   } else if (sibling) {
+    if (!sibling.parentNode) {
+      throw new Error('Cant attach to unattached sibling');
+    }
     sibling.after(item);
   } else {
     initial(item);
@@ -90,6 +101,9 @@ function getLastChild(node: RecNode): ChildNode | null {
     }
     return null;
   }
+  if (node instanceof LazyAttacher) {
+    return getLastChild(node.nodes);
+  }
   return node;
 }
 
@@ -110,6 +124,8 @@ function getSibling(items: RecNode[], indicies: number[]): ChildNode | null {
         continue;
       }
       return lastChild;
+    } else if (node instanceof LazyAttacher) {
+      return getSibling(node.nodes, indicies);
     } else {
       return node;
     }
@@ -117,7 +133,7 @@ function getSibling(items: RecNode[], indicies: number[]): ChildNode | null {
 }
 
 export class LazyAttacher {
-  private nodes: RecNode[] = [];
+  nodes: RecNode[] = [];
   private initial?: (node: ChildNode) => void;
 
   private _unmount(node: RecNode) {
@@ -127,19 +143,36 @@ export class LazyAttacher {
     if (Array.isArray(node)) {
       node.forEach(item => this._unmount(item));
       return;
+    } else if (node instanceof LazyAttacher) {
+      node.nodes.forEach(n => node._unmount(n));
+      return;
     }
     node.remove();
     unmountElement(node);
   }
-  private _mount(node: ChildNode, indicies: number[]) {
+  private _mount(node: ChildNode | LazyAttacher, indicies: number[]) {
     if (!this.initial) {
       return;
     }
+    const init = this.initial;
     const sibling = getSibling(this.nodes, indicies);
-    if (node.textContent === 'Extra') {
-      console.log(node, sibling);
+    if (node instanceof LazyAttacher) {
+      node.activate(inner => {
+        if (sibling) {
+          if (!sibling.parentNode) {
+            throw new Error('Cant attach to unattached sibling');
+          }
+          sibling.after(inner);
+        } else {
+          init(inner);
+        }
+      });
+      return;
     }
     if (sibling) {
+      if (!sibling.parentNode) {
+        throw new Error('Cant attach to unattached sibling');
+      }
       sibling.after(node);
     } else {
       this.initial(node);
@@ -147,7 +180,7 @@ export class LazyAttacher {
     mountElement(node);
   }
 
-  attach(node: ChildNode | null, indicies: number[]) {
+  attach(node: LazyAttacher | ChildNode | null, indicies: number[]) {
     let nodes = this.nodes;
     const lastPos = indicies.length - 1;
     for (let i = 0; i < lastPos; i++) {
@@ -173,9 +206,9 @@ export class LazyAttacher {
     }
   }
 
-  activate(initial: (node: ChildNode) => void) {
+  activate(initial: (node: ChildNode) => void): ChildNode | null {
     this.initial = initial;
-    attach(null, this.nodes, initial);
+    return attach(null, this.nodes, initial);
   }
 }
 
@@ -292,9 +325,7 @@ export function observeNode(
         const observable = props.observable as Observable<unknown>;
         observer.observables.push(observable);
         observer.initCallbacks.push(() => {
-          innerAttacher.activate(node => {
-            attacher.attach(node, idx ?? [0]);
-          });
+          attacher.attach(innerAttacher, idx ?? [0]);
         });
       } else if (!type) {
         const children = props.children as AktaNode;

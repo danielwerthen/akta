@@ -335,42 +335,50 @@ describe('DOM OPS', () => {
     unsub();
   });
 
-  it('should handle array children', async () => {
+  it('should not activate out of order prepared children', async () => {
     const root = document.createElement('div');
-    const sub = new Subject();
-    function Comp({ children }: { children: AktaNode }) {
+
+    function Foo() {
+      return jsx('div', {
+        children: [
+          jsx('h2', {
+            children: 'Links',
+          }),
+          jsx('div', {
+            id: of('55'),
+            children: 'Test',
+          }),
+        ],
+      });
+    }
+
+    function Second({ children }: { children: AktaNode }) {
       const prepare = usePreparer();
-      const [node] = prepare(sub.pipe(mapTo(children)));
+      const [node] = prepare(children);
       return from([null, node]);
     }
+
+    const subject = new Subject();
+    const className = new Subject();
     const unsub = mount(
       jsx('div', {
         children: [
-          null,
-          null,
-          jsx(Comp, {
-            children: [
-              jsx('p', { children: of('first') }),
-              jsx('p', { children: of('second') }),
-            ],
+          jsx(Second, {
+            children: ['first', 'second'],
           }),
-          jsx('div', {
-            children: [
-              jsx(Comp, {
-                children: jsx('h2', { children: 'test' }),
-              }),
-              jsx('p', {
-                children: 'test2',
-              }),
-            ],
-          }),
+          jsx(Foo, {}),
         ],
       }),
       root
     );
-    expect(root).toMatchSnapshot('min');
-    sub.next(4);
-    expect(root).toMatchSnapshot('full');
+    className.next('daniel');
+    subject.next(null);
+    subject.next([
+      jsx('div', { children: 1 }),
+      jsx('div', { children: 2 }),
+      jsx('div', { children: 3 }),
+    ]);
+    expect(root).toMatchSnapshot('first');
     unsub();
   });
 });

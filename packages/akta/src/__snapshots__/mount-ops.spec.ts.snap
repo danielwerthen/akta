@@ -42,39 +42,6 @@ exports[`DOM OPS mount and unmount is called at the right time 1`] = `
 </div>
 `;
 
-exports[`DOM OPS should handle array children: full 1`] = `
-<div>
-  <div>
-    <p>
-      first
-    </p>
-    <p>
-      second
-    </p>
-    <div>
-      <h2>
-        test
-      </h2>
-      <p>
-        test2
-      </p>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`DOM OPS should handle array children: min 1`] = `
-<div>
-  <div>
-    <div>
-      <p>
-        test2
-      </p>
-    </div>
-  </div>
-</div>
-`;
-
 exports[`DOM OPS should handle observable child 1`] = `
 <div>
   <p>
@@ -107,6 +74,25 @@ exports[`DOM OPS should handle teardown 1`] = `
     <p>
       Data3
     </p>
+  </div>
+</div>
+`;
+
+exports[`DOM OPS should not activate out of order prepared children: first 1`] = `
+<div>
+  <div>
+    first
+    second
+    <div>
+      <h2>
+        Links
+      </h2>
+      <div
+        id="55"
+      >
+        Test
+      </div>
+    </div>
   </div>
 </div>
 `;
