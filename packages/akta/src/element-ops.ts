@@ -132,6 +132,7 @@ export class BaseAttributes<
           classNames.forEach(name => {
             element.classList.add(name);
           });
+          prevClassNames = classNames;
         })
       );
     } else {

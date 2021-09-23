@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ErrorBoundary should handle component exceptions gracefully 1`] = `
+<div>
+  fallback
+</div>
+`;
+
+exports[`ErrorBoundary should handle eventual component exceptions gracefully 1`] = `<div />`;
+
+exports[`ErrorBoundary should handle eventual component exceptions gracefully 2`] = `
+<div>
+  <div>
+    It works
+  </div>
+  <div>
+    <div
+      class="className"
+    />
+  </div>
+</div>
+`;
+
+exports[`ErrorBoundary should handle eventual component exceptions gracefully 3`] = `
+<div>
+  fallback
+  <div>
+    <div
+      class="className2"
+    />
+  </div>
+</div>
+`;
+
+exports[`ErrorBoundary should handle eventual component exceptions gracefully 4`] = `
+<div>
+  fallback
+  fallback2
+</div>
+`;

@@ -7,14 +7,7 @@ import {
   ReplaySubject,
   Subscription,
 } from 'rxjs';
-import {
-  switchMap,
-  take,
-  tap,
-  filter,
-  mapTo,
-  catchError,
-} from 'rxjs/operators';
+import { switchMap, tap, filter, mapTo, catchError } from 'rxjs/operators';
 import { jsx } from './jsx-runtime';
 import {
   elementsDependency,
@@ -376,7 +369,7 @@ export function usePrepare(element: AktaNode): Promise<AktaNode> {
 
 export function usePreparer(): (
   element: AktaNode
-) => [AktaNode, Observable<void> | null, Subscription] {
+) => [AktaNode, Observable<void>, Subscription] {
   const dependencies = dependecyContext.getContext();
   const subscriptions: Subscription[] = [];
   useTeardown(() => {
@@ -394,7 +387,7 @@ export function usePreparer(): (
         attacher,
         observable: subject.asObservable(),
       }),
-      subject.pipe(take(1), mapTo(void 0)),
+      subject.pipe(filter(onlyFirst), mapTo(void 0)),
       subscription,
     ];
   };

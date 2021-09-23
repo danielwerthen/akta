@@ -149,7 +149,7 @@ export function Route({
 
         if (Array.isArray(transitions)) {
           if (promise) {
-            transitions.push(promise);
+            transitions.push(promise.pipe(take(1)));
           }
 
           return router.pipe(

@@ -6,3 +6,4 @@ export { createDependency, createLazyDependency } from './dependency-map';
 export * from './jsx-runtime';
 export * from './sync-context';
 export * from './types';
+export * from './components';
