@@ -25,6 +25,7 @@
     "webpack-dev-server": "^3.11.2"
   },
   "dependencies": {
+    "rxjs": "^7.3.0",
     "webpack-merge": "^5.8.0"
   }
 }
