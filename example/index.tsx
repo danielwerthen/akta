@@ -1,5 +1,6 @@
-import { AktaNode, mount } from 'akta';
+import { AktaNode, ErrorBoundary, mount } from 'akta';
 import { Route, Router, Link } from 'akta-router';
+import { interval, map, startWith } from 'rxjs';
 import Index from './pages/index';
 import { Slow } from './pages/slow';
 
@@ -19,16 +20,28 @@ function Header() {
       </span>
       <div $flex="1" $display="flex" $justifyContent="space-evenly">
         <Link href="/" $color="currentColor">
-          Index page
+          Index
         </Link>
         <Link href="/slow" $color="currentColor">
-          Slow page
+          Slow
         </Link>
-        <Link href="/foobar" $color="currentColor">
-          Foobar page
+        <Link href="/error" $color="currentColor">
+          Error
         </Link>
       </div>
     </header>
+  );
+}
+
+function ErrorComponent() {
+  return interval(1000).pipe(
+    startWith(-1),
+    map(i => {
+      if (i > 9) {
+        throw new Error('Invalid state');
+      }
+      return <h1>{9 - i} seconds until crash!</h1>;
+    })
   );
 }
 
@@ -43,21 +56,22 @@ function App() {
         $gridTemplateRows="2.4em 1fr auto"
       >
         <Header />
-        <div $gridArea="main">
+        <div
+          $gridArea="main"
+          $display="flex"
+          $justifyContent="center"
+          $alignItems="center"
+        >
           <Route path="/slow" exact>
             <Slow />
           </Route>
           <Route path="/" exact>
             <Index />
           </Route>
-          <Route path="/foobar" exact>
-            <div>
-              <p>Foobar</p>
-            </div>
-            Extra
-            {new Array(1000).fill(0).map(() => (
-              <div>Row</div>
-            ))}
+          <Route path="/error" exact>
+            <ErrorBoundary fallback="Graceful error handling">
+              <ErrorComponent />
+            </ErrorBoundary>
           </Route>
         </div>
         <footer $gridArea="footer" $backgroundColor="black">
