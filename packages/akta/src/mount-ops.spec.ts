@@ -243,11 +243,8 @@ describe('DOM OPS', () => {
     const mounts = firstValueFrom(onMount.pipe(toArray()));
     const unmounts = firstValueFrom(onUnmount.pipe(toArray()));
     value.next(jsx('div', { children: 'final' }));
-    await new Promise(res => setTimeout(res, 10));
     value.next(jsx('div', { onMount, onUnmount, children: 'first' }));
-    await new Promise(res => setTimeout(res, 10));
     value.next(jsx('div', { children: 'final' }));
-    await new Promise(res => setTimeout(res, 10));
     unsub();
     onMount.complete();
     onUnmount.complete();
