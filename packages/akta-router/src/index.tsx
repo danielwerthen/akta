@@ -13,6 +13,7 @@ import { Akta } from 'akta/jsx-runtime';
 import {
   BehaviorSubject,
   forkJoin,
+  isObservable,
   Observable,
   of,
   Subject,
@@ -89,7 +90,7 @@ export type RouterProps = {
 export function Router({ history, children }: RouterProps) {
   useProvideDependency(routerDependency, createRouter(history));
   useProvideDependency(matchedRoutesDependency, new BehaviorSubject(new Set()));
-  return <div>{children}</div>;
+  return children;
 }
 
 export function useLocation(): Observable<Location> {
@@ -211,17 +212,27 @@ export function Fallback({ children }: FallbackProps) {
   );
 }
 
-export function Link({ href, children }: { href: string; children: AktaNode }) {
+export function Link(props: Akta.AnchorHTMLAttributes<HTMLAnchorElement>) {
+  if (!props.href) {
+    return <a {...props} />;
+  }
   const ctx = useContext();
   const onClick: Akta.MouseEventHandler<HTMLAnchorElement> = new Subject();
+  let href: string | undefined = undefined;
+  if (isObservable(props.href)) {
+    props.href.subscribe(val => {
+      href = val;
+    });
+  } else {
+    href = props.href;
+  }
   onClick.subscribe(e => {
+    if (!href) {
+      return;
+    }
     e.preventDefault();
     ctx.peek(routerDependency).history.push(href);
   });
 
-  return (
-    <a href={href} onClick={onClick}>
-      {children}
-    </a>
-  );
+  return <a {...props} onClick={onClick} />;
 }

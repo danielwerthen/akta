@@ -2,28 +2,22 @@
 
 exports[`Test should match snapshot 1`] = `
 <div>
-  <div>
-    Route
-  </div>
+  Route
 </div>
 `;
 
 exports[`Test should match snapshot 2`] = `
 <div>
-  <div>
-    Route
-  </div>
+  Route
 </div>
 `;
 
 exports[`Test should match snapshot 3`] = `
 <div>
   <div>
-    <div>
-      Param id: 41
-      Foobar2
-      Match 41
-    </div>
+    Param id: 41
+    Foobar2
+    Match 41
   </div>
 </div>
 `;
@@ -31,19 +25,15 @@ exports[`Test should match snapshot 3`] = `
 exports[`Test should match snapshot 4`] = `
 <div>
   <div>
-    <div>
-      Param id: 42
-      Foobar2
-      Match 42
-    </div>
+    Param id: 42
+    Foobar2
+    Match 42
   </div>
 </div>
 `;
 
 exports[`Test should match snapshot 5`] = `
 <div>
-  <div>
-    Fallback
-  </div>
+  Fallback
 </div>
 `;
