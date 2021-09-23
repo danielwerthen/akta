@@ -7,7 +7,14 @@ import {
   ReplaySubject,
   Subscription,
 } from 'rxjs';
-import { switchMap, take, tap, filter, mapTo } from 'rxjs/operators';
+import {
+  switchMap,
+  take,
+  tap,
+  filter,
+  mapTo,
+  catchError,
+} from 'rxjs/operators';
 import { jsx } from './jsx-runtime';
 import {
   elementsDependency,
@@ -402,7 +409,11 @@ export function mount(element: AktaNode, root: HTMLElement): () => void {
     .pipe(
       tap(() =>
         attacher.activate(node => root.insertBefore(node, root.firstChild))
-      )
+      ),
+      catchError((e: unknown) => {
+        console.error(e);
+        return of(void 0);
+      })
     )
     .subscribe();
   return () => sub.unsubscribe();

@@ -384,4 +384,50 @@ describe('DOM OPS', () => {
     expect(root).toMatchSnapshot();
     unsub();
   });
+
+  it('should handle component exceptions gracefully', async () => {
+    const root = document.createElement('div');
+    function ErrorImmediately() {
+      throw new Error('Should be caught');
+      return 'Never';
+    }
+    expect(() => mount(jsx(ErrorImmediately, {}), root)).toThrowError();
+  });
+
+  it('should handle nested component exceptions gracefully', async () => {
+    const root = document.createElement('div');
+    function ErrorImmediately() {
+      throw new Error('Should be caught');
+      return 'Never';
+    }
+    const obs = new Observable(() => {
+      throw new Error('Invalid observable');
+    });
+    const spy = jest.spyOn(global.console, 'error');
+    spy.mockImplementation();
+    mount(
+      jsx('div', {
+        children: [of(jsx(ErrorImmediately, {}))],
+      }),
+      root
+    );
+    expect(spy.mock.calls.length).toBe(1);
+    mount(
+      jsx('div', {
+        children: [jsx('div', { children: obs })],
+      }),
+      root
+    );
+    expect(spy.mock.calls.length).toBe(2);
+    const even = new Subject();
+    mount(
+      jsx('div', {
+        children: [jsx('div', { children: even })],
+      }),
+      root
+    );
+    even.next(jsx(ErrorImmediately, {}));
+    expect(spy.mock.calls.length).toBe(3);
+    spy.mockRestore();
+  });
 });
