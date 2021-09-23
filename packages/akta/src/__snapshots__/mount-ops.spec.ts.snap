@@ -50,6 +50,14 @@ exports[`DOM OPS should handle observable child 1`] = `
 </div>
 `;
 
+exports[`DOM OPS should handle observable classNames 1`] = `
+<div>
+  <div
+    class="cl3"
+  />
+</div>
+`;
+
 exports[`DOM OPS should handle prepare 1`] = `
 <div>
   <p>

@@ -13,7 +13,7 @@
     "build": "tsdx build --tsconfig tsconfig.build.json",
     "test": "node ../../node_modules/.bin/jest",
     "test:mem": "node --expose-gc --harmony-weak-refs ../../node_modules/.bin/jest",
-    "test:watch": "node --expose-gc --harmony-weak-refs ../../node_modules/.bin/jest --watch",
+    "test:watch": "node --expose-gc --harmony-weak-refs ../../node_modules/.bin/jest --watch --maxWorkers=1",
     "test:clear": "tsdx test --clearCache",
     "lint": "tsdx lint",
     "prepublish": "npm run build"

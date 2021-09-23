@@ -6,7 +6,6 @@ import {
   firstValueFrom,
   Observable,
   toArray,
-  mapTo,
 } from 'rxjs';
 import { DependencyMap } from './dependency-map';
 import { jsx } from './jsx-runtime';
@@ -379,6 +378,13 @@ describe('DOM OPS', () => {
       jsx('div', { children: 3 }),
     ]);
     expect(root).toMatchSnapshot('first');
+    unsub();
+  });
+
+  it('should handle observable classNames', async () => {
+    const root = document.createElement('div');
+    const unsub = mount(jsx('div', { className: of('cl3') }), root);
+    expect(root).toMatchSnapshot();
     unsub();
   });
 });

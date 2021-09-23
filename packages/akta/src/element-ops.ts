@@ -128,10 +128,10 @@ export class BaseAttributes<
                 element.classList.remove(name);
               }
             });
-            classNames.forEach(name => {
-              element.classList.add(name);
-            });
           }
+          classNames.forEach(name => {
+            element.classList.add(name);
+          });
         })
       );
     } else {
