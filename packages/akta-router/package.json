@@ -1,6 +1,5 @@
 {
   "name": "akta-router",
-  "private": "true",
   "version": "0.1.0",
   "description": "Akta routing framework",
   "author": "Daniel Lichtenstein",
@@ -22,8 +21,7 @@
   "dependencies": {
     "history": "^5.0.1",
     "path-to-regexp": "^6.2.0",
-    "rxjs": "^7.3.0",
-    "tslib": "^2.0.0"
+    "rxjs": "^7.3.0"
   },
   "resolutions": {
     "@typescript-eslint/eslint-plugin": "4.29.0",
