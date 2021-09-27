@@ -1,6 +1,7 @@
 import {
   createLazyDependency,
   createDependency,
+  Dependency,
   createSyncContext,
   useDependency,
   useContext,
@@ -33,7 +34,9 @@ import {
 import { createBrowserHistory, History, Location } from 'history';
 import { match, Match } from 'path-to-regexp';
 
-export const routerDependency = createLazyDependency<RouterState>(createRouter);
+export const routerDependency: Dependency<RouterState> = createLazyDependency<
+  RouterState
+>(createRouter);
 
 export const routeMatchDependency = createDependency<
   Match<{
