@@ -267,9 +267,6 @@ export function observeNode(
   _idx?: number[]
 ): void {
   const queue: QueueItem[] = [[_node, _deps, _attacher, _observer, _idx]];
-  const addToQueue: typeof observeNode = function(...args) {
-    queue.push(args as QueueItem);
-  };
   while (true) {
     const item = queue.shift();
     if (item === undefined) {
@@ -280,7 +277,13 @@ export function observeNode(
       attacher.attach(null, idx ?? [0]);
     } else if (Array.isArray(node)) {
       for (let i = 0; i < node.length; i++) {
-        addToQueue(node[i], deps, attacher, observer, idx ? [...idx, i] : [i]);
+        queue.push([
+          node[i],
+          deps,
+          attacher,
+          observer,
+          idx ? [...idx, i] : [i],
+        ]);
       }
     } else if (isObservable(node)) {
       const obs = node.pipe(
@@ -304,7 +307,7 @@ export function observeNode(
           if (key === 'children') {
             const children = props[key] as AktaNode;
             childAttacher = new LazyAttacher();
-            addToQueue(children, deps, childAttacher, observer);
+            queue.push([children, deps, childAttacher, observer, undefined]);
           } else {
             const observable = elements[type][key](element, props[key]);
             if (observable) {
@@ -329,10 +332,10 @@ export function observeNode(
         });
       } else if (!type) {
         const children = props.children as AktaNode;
-        addToQueue(children, deps, attacher, observer, idx);
+        queue.push([children, deps, attacher, observer, idx]);
       } else {
         const [element, nextDeps] = callComponent(type, props, deps);
-        addToQueue(element, nextDeps, attacher, observer, idx);
+        queue.push([element, nextDeps, attacher, observer, idx]);
 
         const fns = nextDeps.peek(teardownDependency);
         if (fns && fns.length > 0) {
