@@ -1,0 +1,83 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Element ops should handle observable classNames 1`] = `
+<div>
+  <div
+    class="cl454"
+  />
+</div>
+`;
+
+exports[`Element ops should handle observable classNames 2`] = `
+<div>
+  <div
+    class="3"
+  />
+</div>
+`;
+
+exports[`Element ops should handle observable classNames 3`] = `
+<div>
+  <div
+    class=""
+  />
+</div>
+`;
+
+exports[`Element ops should handle observable classNames 4`] = `
+<div>
+  <div
+    class=""
+  />
+</div>
+`;
+
+exports[`Element ops should handle observable classNames 5`] = `
+<div>
+  <div
+    class="final"
+  />
+</div>
+`;
+
+exports[`Element ops should handle onclick events 1`] = `
+Array [
+  MouseEvent {
+    "isTrusted": false,
+  },
+  MouseEvent {
+    "isTrusted": false,
+  },
+  MouseEvent {
+    "isTrusted": false,
+  },
+  MouseEvent {
+    "isTrusted": false,
+  },
+]
+`;
+
+exports[`Element ops should handle onclick functions 1`] = `
+Array [
+  Array [
+    MouseEvent {
+      "isTrusted": false,
+    },
+  ],
+  Array [
+    MouseEvent {
+      "isTrusted": false,
+    },
+  ],
+  Array [
+    MouseEvent {
+      "isTrusted": false,
+    },
+  ],
+  Array [
+    MouseEvent {
+      "isTrusted": false,
+    },
+  ],
+]
+`;

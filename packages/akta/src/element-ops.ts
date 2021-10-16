@@ -73,30 +73,23 @@ function standardPropMethod<T extends HTMLElement>(
   };
 }
 
+function isSubject<T>(value: unknown): value is Subject<T> {
+  return !!value && typeof (value as Subject<T>).next === 'function';
+}
+
 function standardEventMethod<T extends HTMLElement>(
   key: string
 ): AttributeMethod {
   const eventName = key.substr(2).toLowerCase();
   return function(element: T, value: unknown) {
-    const subject = value as Subject<Event> | ((e: Event) => void);
-    return new Observable(sub => {
-      sub.next();
-      if (typeof subject === 'function') {
-        element.addEventListener(eventName, subject, false);
-        return () => element.removeEventListener(eventName, subject);
-      }
-      function eventHandler(e: Event) {
-        if (typeof subject === 'function') {
-          subject(e);
-        } else {
-          subject.next(e);
-        }
-      }
-      element.addEventListener(eventName, eventHandler, false);
-      return () => {
-        element.removeEventListener(eventName, eventHandler);
-      };
-    });
+    if (!value) {
+      return;
+    }
+    if (typeof value === 'function') {
+      element.addEventListener(eventName, value as (e: Event) => void);
+    } else if (isSubject<Event>(value)) {
+      element.addEventListener(eventName, e => value.next(e));
+    }
   };
 }
 
@@ -121,7 +114,7 @@ export class BaseAttributes<
       let prevClassNames: string[];
       return value.pipe(
         tap(item => {
-          const classNames = item.split(' ');
+          const classNames = item ? item.toString().split(' ') : [];
           if (prevClassNames) {
             prevClassNames.forEach(name => {
               if (!classNames.includes(name)) {
@@ -135,10 +128,13 @@ export class BaseAttributes<
           prevClassNames = classNames;
         })
       );
-    } else {
-      value.split(' ').forEach(value => element.classList.add(value));
-      return;
+    } else if (value) {
+      value
+        .toString()
+        .split(' ')
+        .forEach(value => element.classList.add(value));
     }
+    return;
   }
   [MethodMissing](key: string | symbol) {
     if (typeof key === 'symbol') {
