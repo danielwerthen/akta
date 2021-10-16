@@ -57,8 +57,6 @@ function standardPropMethod<T extends HTMLElement>(
           return;
         }
       }
-      console.warn('Invalid property ' + key);
-      return;
     }
     if (isObservable(value)) {
       return value.pipe(

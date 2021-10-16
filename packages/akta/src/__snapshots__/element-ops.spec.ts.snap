@@ -1,5 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Element ops should handle aria attributes 1`] = `
+<div>
+  <button
+    aria-hidden="true"
+  />
+</div>
+`;
+
 exports[`Element ops should handle observable classNames 1`] = `
 <div>
   <div

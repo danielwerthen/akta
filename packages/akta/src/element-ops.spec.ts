@@ -50,4 +50,10 @@ describe('Element ops', () => {
     unsub();
     document.body.removeChild(root);
   });
+  it('should handle aria attributes', async () => {
+    const root = document.createElement('div');
+    const unsub = mount(jsx('button', { ['aria-hidden']: true }), root);
+    expect(root).toMatchSnapshot();
+    unsub();
+  });
 });
