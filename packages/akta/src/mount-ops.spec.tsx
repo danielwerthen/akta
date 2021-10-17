@@ -1,3 +1,4 @@
+/** @jsxImportSource . */
 import {
   from,
   of,
@@ -49,11 +50,7 @@ describe('Observe node', () => {
     }
     const observer = new NodeObserver();
     observeNode(
-      of(
-        jsx('div', {
-          children: ['baz', jsx(Component, { children: 'test' }), of('foobar')],
-        })
-      ),
+      of(<div>{['baz', <Component>test</Component>, of('foobar')]}</div>),
       deps,
       attacher,
       observer
@@ -67,19 +64,11 @@ describe('Observe node', () => {
   it('should place later nodes in right order', () => {
     const root = document.createElement('article');
     mount(
-      jsx('div', {
-        children: [
-          jsx('div', {
-            children: [from(['hide', 'first']), 'second', 'third'],
-          }),
-          jsx('div', {
-            children: ['first', from(['hide', 'second']), 'third'],
-          }),
-          jsx('div', {
-            children: ['first', 'second', from(['hide', 'third'])],
-          }),
-        ],
-      }),
+      <div>
+        <div>{[from(['hide', 'first']), 'second', 'third']}</div>
+        <div>{['first', from(['hide', 'second']), 'third']}</div>
+        <div>{['first', 'second', from(['hide', 'third'])]}</div>
+      </div>,
       root
     );
     expect(root).toMatchSnapshot();
@@ -93,21 +82,15 @@ describe('Observe node', () => {
     }
     try {
       mount(
-        jsx('div', {
-          children: [
-            jsx('div', {
-              children: [
-                jsx('div', {
-                  children: [
-                    jsx('div', {
-                      children: [jsx(Daniel, {})],
-                    }),
-                  ],
-                }),
-              ],
-            }),
-          ],
-        }),
+        <div>
+          <div>
+            <div>
+              <div>
+                <Daniel />
+              </div>
+            </div>
+          </div>
+        </div>,
         root
       );
       throw new Error('Should not end up here');
@@ -123,26 +106,21 @@ describe('Observe node', () => {
   it('should handle fragments properly', () => {
     const root = document.createElement('article');
     function Comp() {
-      return jsx('div', {
-        children: ['test', 'foo'],
-      });
+      return <div>{['test', 'foo']}</div>;
     }
     function App() {
-      return jsx('div', {
-        children: [
-          jsx('h2', {
-            children: 'Header',
-          }),
-          jsx(undefined, {
-            children: [jsx(Comp, {}), jsx(Comp, {})],
-          }),
-          jsx('div', {
-            children: 'after',
-          }),
-        ],
-      });
+      return (
+        <div>
+          <h2>Header</h2>
+          <>
+            <Comp />
+            <Comp />
+          </>
+          <div>after</div>
+        </div>
+      );
     }
-    mount(jsx(App, {}), root);
+    mount(<App />, root);
     expect(root).toMatchSnapshot();
   });
 
@@ -150,23 +128,20 @@ describe('Observe node', () => {
     const root = document.createElement('article');
     const momo = new Subject();
     function App() {
-      return jsx('div', {
-        children: [
-          of('Param id: 42'),
-          momo,
-          of(null),
-          from([null, 'Match 42']),
-        ],
-      });
+      return (
+        <div>
+          {[of('Param id: 42'), momo, of(null), from([null, 'Match 42'])]}
+        </div>
+      );
     }
-    mount(jsx(App, {}), root);
+    mount(<App />, root);
     momo.next('Foobar2');
     expect(root).toMatchSnapshot();
   });
   it('Should handle events', () => {
     const root = document.createElement('article');
     const fn = jest.fn();
-    mount(jsx('div', { onClick: fn, children: 'body' }), root);
+    mount(<div onClick={fn}>body</div>, root);
     (root.childNodes[0] as HTMLElement).click();
     expect(fn.mock.calls.length).toBe(1);
     expect(root).toMatchSnapshot();
@@ -192,9 +167,7 @@ describe('DOM OPS', () => {
       setTimeout((item: string) => sub.next(item), 10, 'foobar');
     });
     mount(
-      jsx('p', {
-        children: ['top', from(['immediate', 'immediate2']), value, 'bottom'],
-      }),
+      <p>{['top', from(['immediate', 'immediate2']), value, 'bottom']}</p>,
       root
     );
     expect(root).toMatchSnapshot();
@@ -204,11 +177,9 @@ describe('DOM OPS', () => {
   it('should render within range of comparison implementation', async () => {
     const root = document.createElement('div');
     const array = new Array(100).fill(0);
-    const value = array.map(() =>
-      jsx('span', { children: 'word', className: 'foobar' })
-    );
+    const value = array.map(() => <span className="foobar">word</span>);
     const t0 = performance.now();
-    mount(jsx('p', { children: value }), root);
+    mount(<p>{value}</p>, root);
     function update(span: HTMLSpanElement) {
       span.classList.add('foobar');
       span.innerText = 'word';
@@ -230,21 +201,25 @@ describe('DOM OPS', () => {
   it('Array nodes are rendered correctly', async () => {
     const root = document.createElement('div');
     const value = ['test', 'more'];
-    mount(jsx('p', { children: value }), root);
+    mount(<p>{value}</p>, root);
     expect(root).toMatchSnapshot();
   });
 
   it('mount and unmount is called at the right time', async () => {
     const root = document.createElement('div');
     const value = new Subject<AktaNode>();
-    const unsub = mount(jsx('p', { children: value }), root);
-    const onMount = new Subject<unknown>();
-    const onUnmount = new Subject<unknown>();
+    const unsub = mount(<p>{value}</p>, root);
+    const onMount = new Subject<any>();
+    const onUnmount = new Subject<any>();
     const mounts = firstValueFrom(onMount.pipe(toArray()));
     const unmounts = firstValueFrom(onUnmount.pipe(toArray()));
-    value.next(jsx('div', { children: 'final' }));
-    value.next(jsx('div', { onMount, onUnmount, children: 'first' }));
-    value.next(jsx('div', { children: 'final' }));
+    value.next(<div>final</div>);
+    value.next(
+      <div onMount={onMount} onUnmount={onUnmount}>
+        first
+      </div>
+    );
+    value.next(<div>final</div>);
     unsub();
     onMount.complete();
     onUnmount.complete();
@@ -256,24 +231,24 @@ describe('DOM OPS', () => {
   it('deep mount and unmount is called at the right time', async () => {
     const root = document.createElement('div');
     const value = new Subject<AktaNode>();
-    const unsub = mount(jsx('p', { children: value }), root);
-    const onMount = new Subject<unknown>();
-    const onUnmount = new Subject<unknown>();
+    const unsub = mount(<p>{value}</p>, root);
+    const onMount = new Subject<any>();
+    const onUnmount = new Subject<any>();
     const mounts = firstValueFrom(onMount.pipe(toArray()));
     const unmounts = firstValueFrom(onUnmount.pipe(toArray()));
-    value.next(jsx('div', { children: 'final' }));
+    value.next(<div>final</div>);
     await new Promise(res => setTimeout(res, 10));
     value.next(
-      jsx('div', {
-        children: jsx('div', {
-          onMount,
-          onUnmount,
-          children: jsx('div', { onMount, onUnmount, children: 'first' }),
-        }),
-      })
+      <div>
+        <div onMount={onMount} onUnmount={onUnmount}>
+          <div onMount={onMount} onUnmount={onUnmount}>
+            first
+          </div>
+        </div>
+      </div>
     );
     await new Promise(res => setTimeout(res, 10));
-    value.next(jsx('div', { children: 'final' }));
+    value.next(<div>final</div>);
     await new Promise(res => setTimeout(res, 10));
     unsub();
     onMount.complete();
@@ -289,14 +264,14 @@ describe('DOM OPS', () => {
     const teardown = jest.fn();
     function Comp({ name }: { name: string }) {
       useTeardown(teardown);
-      return jsx('p', { children: name });
+      return <p>{name}</p>;
     }
-    const unsub = mount(jsx('div', { children: value }), root);
-    value.next(jsx(Comp, { name: 'Data' }));
+    const unsub = mount(<div>{value}</div>, root);
+    value.next(<Comp name="Data" />);
     expect(teardown.mock.calls.length).toBe(0);
-    value.next(jsx(Comp, { name: 'Data2' }));
+    value.next(<Comp name="Data2" />);
     expect(teardown.mock.calls.length).toBe(1);
-    value.next(jsx(Comp, { name: 'Data3' }));
+    value.next(<Comp name="Data3" />);
     expect(teardown.mock.calls.length).toBe(2);
     unsub();
     expect(teardown.mock.calls.length).toBe(3);
@@ -308,10 +283,10 @@ describe('DOM OPS', () => {
     const eventually = new Subject<AktaNode>();
     function Comp() {
       const children = new BehaviorSubject<AktaNode>('Loading');
-      usePrepare(jsx('span', { children: eventually })).then(res => {
+      usePrepare(<span>{eventually}</span>).then(res => {
         children.next(res);
       });
-      return jsx('p', { children });
+      return <p>{children}</p>;
     }
     const unsub = mount(jsx(Comp, {}), root);
     await new Promise(res => setTimeout(res, 10));
@@ -324,9 +299,9 @@ describe('DOM OPS', () => {
   it('should handle observable child', async () => {
     const root = document.createElement('div');
     function Comp() {
-      return jsx('p', { children: of('Daniel') });
+      return <p>{of('Daniel')}</p>;
     }
-    const unsub = mount(jsx(Comp, {}), root);
+    const unsub = mount(<Comp />, root);
     expect(root).toMatchSnapshot();
     unsub();
   });
@@ -335,17 +310,12 @@ describe('DOM OPS', () => {
     const root = document.createElement('div');
 
     function Foo() {
-      return jsx('div', {
-        children: [
-          jsx('h2', {
-            children: 'Links',
-          }),
-          jsx('div', {
-            id: of('55'),
-            children: 'Test',
-          }),
-        ],
-      });
+      return (
+        <div>
+          <h2>Links</h2>
+          <div id={of('55')}>Test</div>
+        </div>
+      );
     }
 
     function Second({ children }: { children: AktaNode }) {
@@ -357,30 +327,22 @@ describe('DOM OPS', () => {
     const subject = new Subject();
     const className = new Subject();
     const unsub = mount(
-      jsx('div', {
-        children: [
-          jsx(Second, {
-            children: ['first', 'second'],
-          }),
-          jsx(Foo, {}),
-        ],
-      }),
+      <div>
+        <Second>{['first', 'second']}</Second>
+        <Foo />
+      </div>,
       root
     );
     className.next('daniel');
     subject.next(null);
-    subject.next([
-      jsx('div', { children: 1 }),
-      jsx('div', { children: 2 }),
-      jsx('div', { children: 3 }),
-    ]);
+    subject.next([<div>1</div>, <div>2</div>, <div>3</div>]);
     expect(root).toMatchSnapshot('first');
     unsub();
   });
 
   it('should handle observable classNames', async () => {
     const root = document.createElement('div');
-    const unsub = mount(jsx('div', { className: of('cl3') }), root);
+    const unsub = mount(<div className="cl3" />, root);
     expect(root).toMatchSnapshot();
     unsub();
   });
@@ -391,7 +353,7 @@ describe('DOM OPS', () => {
       throw new Error('Should be caught');
       return 'Never';
     }
-    expect(() => mount(jsx(ErrorImmediately, {}), root)).toThrowError();
+    expect(() => mount(<ErrorImmediately />, root)).toThrowError();
   });
 
   it('should handle nested component exceptions gracefully', async () => {
@@ -405,29 +367,20 @@ describe('DOM OPS', () => {
     });
     const spy = jest.spyOn(global.console, 'error');
     spy.mockImplementation();
-    mount(
-      jsx('div', {
-        children: [of(jsx(ErrorImmediately, {}))],
-      }),
-      root
-    );
+    mount(<div>{of(jsx(ErrorImmediately, {}))}</div>, root);
     expect(spy.mock.calls.length).toBe(1);
-    mount(
-      jsx('div', {
-        children: [jsx('div', { children: obs })],
-      }),
-      root
-    );
+    mount(<div>{obs}</div>, root);
     expect(spy.mock.calls.length).toBe(2);
     const even = new Subject();
-    mount(
-      jsx('div', {
-        children: [jsx('div', { children: even })],
-      }),
-      root
-    );
+    mount(<div>{even}</div>, root);
+
     even.next(jsx(ErrorImmediately, {}));
     expect(spy.mock.calls.length).toBe(3);
     spy.mockRestore();
+  });
+
+  it('should allow prepared elements to be detachable', async () => {
+    const foo = <p>Daniel</p>;
+    expect(foo).toMatchSnapshot();
   });
 });
