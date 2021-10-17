@@ -17,7 +17,12 @@ import {
 } from './dependencies';
 import { DependencyMap } from './dependency-map';
 import { callComponent } from './component-ops';
-import { AktaNode, AktaPreparedComponent, isAktaElement } from './types';
+import {
+  AktaNode,
+  AktaPreparedComponent,
+  isAktaElement,
+  Fragment,
+} from './types';
 import { mountElement, unmountElement } from './element-ops';
 
 type RecNode = null | ChildNode | LazyAttacher | RecNode[];
@@ -332,7 +337,7 @@ export function observeNode(
         observer.initCallbacks.push(() => {
           attacher.attach(innerAttacher, idx ?? [0]);
         });
-      } else if (!type) {
+      } else if (!type || type === Fragment) {
         const children = props.children as AktaNode;
         queue.push([children, deps, attacher, observer, idx]);
       } else {

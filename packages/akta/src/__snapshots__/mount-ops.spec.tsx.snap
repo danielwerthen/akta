@@ -42,6 +42,16 @@ exports[`DOM OPS mount and unmount is called at the right time 1`] = `
 </div>
 `;
 
+exports[`DOM OPS should accept Fragments with keys 1`] = `
+<div>
+  <div>
+    Empty
+    Fragment
+    Fragment2
+  </div>
+</div>
+`;
+
 exports[`DOM OPS should allow prepared elements to be detachable 1`] = `
 Object {
   "$$type": Symbol(Akta element),

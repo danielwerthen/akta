@@ -39,3 +39,7 @@ export function AktaPreparedComponent(_props: {
 }) {
   return null;
 }
+
+export function Fragment({ children }: { children: AktaNode }) {
+  return children;
+}

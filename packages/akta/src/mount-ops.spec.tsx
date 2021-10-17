@@ -20,7 +20,7 @@ import {
 } from './mount-ops';
 import { usePrepare } from './index';
 import { useTeardown } from './dependencies';
-import { AktaNode } from './types';
+import { AktaNode, Fragment } from './types';
 
 describe('Mount ops 2', () => {
   let attacher = new LazyAttacher();
@@ -395,6 +395,22 @@ describe('DOM OPS', () => {
     array$.next(new Array(5).fill(0).map((_i, idx) => <p>{idx.toString()}</p>));
     expect(root).toMatchSnapshot();
     array$.next(new Array(0).fill(0).map((_i, idx) => <p>{idx.toString()}</p>));
+    expect(root).toMatchSnapshot();
+    unsub();
+  });
+
+  it('should accept Fragments with keys', async () => {
+    const root = document.createElement('div');
+    const unsub = mount(
+      <div>
+        {[
+          <>Empty</>,
+          <Fragment>Fragment</Fragment>,
+          <Fragment key="foo">Fragment2</Fragment>,
+        ]}
+      </div>,
+      root
+    );
     expect(root).toMatchSnapshot();
     unsub();
   });
