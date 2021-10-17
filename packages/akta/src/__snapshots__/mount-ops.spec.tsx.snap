@@ -246,6 +246,7 @@ exports[`Observe node should mount elements in correct order 1`] = `
   <div>
     Param id: 42
     Foobar2
+    test
     Match 42
   </div>
 </article>

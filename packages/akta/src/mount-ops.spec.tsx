@@ -130,7 +130,7 @@ describe('Observe node', () => {
     function App() {
       return (
         <div>
-          {[of('Param id: 42'), momo, of(null), from([null, 'Match 42'])]}
+          {[of('Param id: 42'), momo, of('test'), from([null, 'Match 42'])]}
         </div>
       );
     }
