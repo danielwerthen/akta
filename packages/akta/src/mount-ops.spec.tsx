@@ -383,4 +383,19 @@ describe('DOM OPS', () => {
     const foo = <p>Daniel</p>;
     expect(foo).toMatchSnapshot();
   });
+
+  it('should remove old array items when sizes differ', async () => {
+    const root = document.createElement('div');
+    const array$ = new BehaviorSubject<any[]>([]);
+    const unsub = mount(<div>{array$}</div>, root);
+    array$.next(
+      new Array(10).fill(0).map((_i, idx) => <p>{idx.toString()}</p>)
+    );
+    expect(root).toMatchSnapshot();
+    array$.next(new Array(5).fill(0).map((_i, idx) => <p>{idx.toString()}</p>));
+    expect(root).toMatchSnapshot();
+    array$.next(new Array(0).fill(0).map((_i, idx) => <p>{idx.toString()}</p>));
+    expect(root).toMatchSnapshot();
+    unsub();
+  });
 });

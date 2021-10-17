@@ -116,6 +116,71 @@ exports[`DOM OPS should not activate out of order prepared children: first 1`] =
 </div>
 `;
 
+exports[`DOM OPS should remove old array items when sizes differ 1`] = `
+<div>
+  <div>
+    <p>
+      0
+    </p>
+    <p>
+      1
+    </p>
+    <p>
+      2
+    </p>
+    <p>
+      3
+    </p>
+    <p>
+      4
+    </p>
+    <p>
+      5
+    </p>
+    <p>
+      6
+    </p>
+    <p>
+      7
+    </p>
+    <p>
+      8
+    </p>
+    <p>
+      9
+    </p>
+  </div>
+</div>
+`;
+
+exports[`DOM OPS should remove old array items when sizes differ 2`] = `
+<div>
+  <div>
+    <p>
+      0
+    </p>
+    <p>
+      1
+    </p>
+    <p>
+      2
+    </p>
+    <p>
+      3
+    </p>
+    <p>
+      4
+    </p>
+  </div>
+</div>
+`;
+
+exports[`DOM OPS should remove old array items when sizes differ 3`] = `
+<div>
+  <div />
+</div>
+`;
+
 exports[`Mount ops 2 should create deterministic structures 1`] = `
 <article>
   <div />

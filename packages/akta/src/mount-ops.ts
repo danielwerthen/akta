@@ -31,7 +31,7 @@ function attach(
     return null;
   } else if (Array.isArray(item)) {
     return item.reduce<ChildNode | null>((sibling, node) => {
-      return attach(sibling, node, initial);
+      return attach(sibling, node, initial) || sibling;
     }, sibling);
   } else if (item instanceof LazyAttacher) {
     return item.activate(node => {
@@ -289,7 +289,9 @@ export function observeNode(
       const obs = node.pipe(
         switchMap(innerNode => {
           const subs = new NodeObserver();
-          observeNode(innerNode, deps, attacher, subs, idx);
+          const childAttacher = new LazyAttacher();
+          observeNode(innerNode, deps, childAttacher, subs);
+          attacher.attach(childAttacher, idx ?? [0]);
           return subs.observe();
         })
       );
