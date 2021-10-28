@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "webpack serve --open --history-api-fallback --config webpack.dev.js",
+    "start": "webpack serve --open --host 0.0.0.0 --allowed-hosts homelab --history-api-fallback --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
     "build:analyze": "webpack --config webpack.analyze.js"
   },

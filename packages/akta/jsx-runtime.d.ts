@@ -555,7 +555,8 @@ declare namespace Akta {
   // Event Handler Types
   // ----------------------------------------------------------------------
 
-  type EventHandler<E extends SubjectableEvent<any>> = Subject<E> | ((e: E) => void);
+  type DataEventHandler<E extends SubjectableEvent<any>, D> = [Subject<[D, E]> | ((d: D, e: E) => void), D];
+  type EventHandler<E extends SubjectableEvent<any>> = Subject<E> | ((e: E) => void) | DataEventHandler<E, unknown>;
 
   type AktaEventHandler<T = Element> = EventHandler<SubjectableEvent<T>>;
 

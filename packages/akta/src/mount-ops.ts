@@ -24,6 +24,7 @@ import {
   Fragment,
 } from './types';
 import { mountElement, unmountElement } from './element-ops';
+import { addDelegatedEvents } from './events';
 
 type RecNode = null | ChildNode | LazyAttacher | RecNode[];
 
@@ -407,6 +408,7 @@ export function mount(element: AktaNode, root: HTMLElement): () => void {
   const attacher = new LazyAttacher();
   const observer = new NodeObserver();
   observeNode(element, new DependencyMap(), attacher, observer);
+  addDelegatedEvents(root);
   const sub = observer
     .observe()
     .pipe(

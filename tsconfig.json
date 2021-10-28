@@ -4,6 +4,7 @@
   "compilerOptions": {
     "allowJs": false,
     "baseUrl": ".",
+    "downlevelIteration": true,
     "jsx": "react-jsx",
     "jsxImportSource": "akta",
     "typeRoots": ["./node_modules/@types", "./types"],

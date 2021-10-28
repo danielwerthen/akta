@@ -49,6 +49,15 @@ export default function Index() {
         {'daniel is <div>bad</div>'}
       </p>
       {from([null, <Display />])}
+      <div onClick={[console.log, 'Div1']}>
+        Div 1
+        <div onClick={e => (console.log('Div2', e), e.stopPropagation())}>
+          Div 2
+          <div onClick={console.log.bind(null, 'Div3')}>
+            Div 3<div onClick={console.log.bind(null, 'Div4')}>Div 4</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

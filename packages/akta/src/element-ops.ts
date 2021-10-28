@@ -2,6 +2,7 @@ import { isObservable, Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { standardCSSMethod } from './styling-ops';
 import MetaObject, { MethodMissing } from './meta-object';
+import { DelegatedEvents } from './events';
 
 export function isEvent(key: string) {
   return (
@@ -79,6 +80,12 @@ function standardEventMethod<T extends HTMLElement>(
   key: string
 ): AttributeMethod {
   const eventName = key.substr(2).toLowerCase();
+  if (DelegatedEvents.has(eventName)) {
+    const key = `__${eventName}`;
+    return function(element: T, value: unknown) {
+      ((element as unknown) as { [key: string]: unknown })[key] = value;
+    };
+  }
   return function(element: T, value: unknown) {
     if (!value) {
       return;
