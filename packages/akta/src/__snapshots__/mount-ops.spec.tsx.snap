@@ -71,6 +71,29 @@ exports[`DOM OPS should handle observable child 1`] = `
 </div>
 `;
 
+exports[`DOM OPS should handle observable child with null siblings 1`] = `
+<div>
+  1
+  1
+  1
+</div>
+`;
+
+exports[`DOM OPS should handle observable child with null siblings 2`] = `<div />`;
+
+exports[`DOM OPS should handle observable child with null siblings 3`] = `
+<div>
+  2
+</div>
+`;
+
+exports[`DOM OPS should handle observable child with null siblings 4`] = `
+<div>
+  2
+  3
+</div>
+`;
+
 exports[`DOM OPS should handle observable classNames 1`] = `
 <div>
   <div

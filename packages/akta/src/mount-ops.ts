@@ -292,15 +292,15 @@ export function observeNode(
         ]);
       }
     } else if (isObservable(node)) {
+      const childAttacher = new LazyAttacher();
       const obs = node.pipe(
         switchMap(innerNode => {
           const subs = new NodeObserver();
-          const childAttacher = new LazyAttacher();
           observeNode(innerNode, deps, childAttacher, subs);
-          attacher.attach(childAttacher, idx ?? [0]);
           return subs.observe();
         })
       );
+      attacher.attach(childAttacher, idx ?? [0]);
       observer.observables.push(obs);
     } else if (typeof node === 'string') {
       attacher.attach(document.createTextNode(node), idx ?? [0]);

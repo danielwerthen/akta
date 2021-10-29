@@ -306,6 +306,37 @@ describe('DOM OPS', () => {
     unsub();
   });
 
+  it('should handle observable child with null siblings', async () => {
+    const root = document.createElement('div');
+    function Comp({ sub }: { sub: Subject<number | null> }) {
+      return sub;
+    }
+    const sub1 = new Subject<number | null>();
+    const sub2 = new Subject<number | null>();
+    const sub3 = new Subject<number | null>();
+    const unsub = mount(
+      <>
+        <Comp sub={sub1} />
+        <Comp sub={sub2} />
+        <Comp sub={sub3} />
+      </>,
+      root
+    );
+    sub1.next(1);
+    sub2.next(1);
+    sub3.next(1);
+    expect(root).toMatchSnapshot();
+    sub1.next(null);
+    sub2.next(null);
+    sub3.next(null);
+    expect(root).toMatchSnapshot();
+    sub1.next(2);
+    expect(root).toMatchSnapshot();
+    sub3.next(3);
+    expect(root).toMatchSnapshot();
+    unsub();
+  });
+
   it('should not activate out of order prepared children', async () => {
     const root = document.createElement('div');
 
