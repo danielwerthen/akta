@@ -212,6 +212,21 @@ export class LazyAttacher {
     }
   }
 
+  getNodeCountAt(indicies: number[]) {
+    let nodes = this.nodes;
+    for (let i = 0; i < indicies.length; i++) {
+      const item = nodes[indicies[i]];
+      if (!item) {
+        nodes = nodes[indicies[i]] = [];
+      } else if (Array.isArray(item)) {
+        nodes = item;
+      } else {
+        nodes = nodes[indicies[i]] = [];
+      }
+    }
+    return nodes.length;
+  }
+
   activate(initial: (node: ChildNode) => void): ChildNode | null {
     this.initial = initial;
     return attach(null, this.nodes, initial);
@@ -282,25 +297,24 @@ export function observeNode(
     if (!node) {
       attacher.attach(null, idx ?? [0]);
     } else if (Array.isArray(node)) {
-      for (let i = 0; i < node.length; i++) {
-        queue.push([
-          node[i],
-          deps,
-          attacher,
-          observer,
-          idx ? [...idx, i] : [i],
-        ]);
+      const up = node.length;
+      const del = attacher.getNodeCountAt(idx ? idx : []);
+      for (let i = 0; i < Math.max(up, del); i++) {
+        const indicies = idx ? [...idx, i] : [i];
+        if (i < up) {
+          queue.push([node[i], deps, attacher, observer, indicies]);
+        } else {
+          attacher.attach(null, indicies);
+        }
       }
     } else if (isObservable(node)) {
-      const childAttacher = new LazyAttacher();
       const obs = node.pipe(
         switchMap(innerNode => {
           const subs = new NodeObserver();
-          observeNode(innerNode, deps, childAttacher, subs);
+          observeNode(innerNode, deps, attacher, subs, idx ?? [0]);
           return subs.observe();
         })
       );
-      attacher.attach(childAttacher, idx ?? [0]);
       observer.observables.push(obs);
     } else if (typeof node === 'string') {
       attacher.attach(document.createTextNode(node), idx ?? [0]);
