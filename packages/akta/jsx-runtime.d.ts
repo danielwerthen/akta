@@ -592,13 +592,6 @@ declare namespace Akta {
 
   type StylePropertyValue = string;
 
-  type AktaText = string | number;
-  type AktaChild = AktaElement | AktaText;
-
-  interface AktaNodeArray extends Array<AktaNode> {}
-  type AktaFragment = {} | AktaNodeArray;
-  export type AktaNode = AktaChild | AktaFragment | boolean | null | undefined;
-
   interface DOMAttributes<T> {
     children?: AktaNode;
 

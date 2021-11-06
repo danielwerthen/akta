@@ -318,6 +318,8 @@ export function observeNode(
       observer.observables.push(obs);
     } else if (typeof node === 'string') {
       attacher.attach(document.createTextNode(node), idx ?? [0]);
+    } else if (node instanceof HTMLElement) {
+      attacher.attach(node, idx ?? [0]);
     } else if (isAktaElement(node)) {
       const { type, props } = node;
       if (typeof type === 'string') {

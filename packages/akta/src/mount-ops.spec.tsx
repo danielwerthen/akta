@@ -126,7 +126,7 @@ describe('Observe node', () => {
 
   it('should mount elements in correct order', () => {
     const root = document.createElement('article');
-    const momo = new Subject();
+    const momo = new Subject<AktaNode>();
     function App() {
       return (
         <div>
@@ -163,7 +163,7 @@ describe('getPrev', () => {
 describe('DOM OPS', () => {
   it('Observable child nodes are rendered correctly', async () => {
     const root = document.createElement('div');
-    const value = new Observable(sub => {
+    const value = new Observable<AktaNode>(sub => {
       setTimeout((item: string) => sub.next(item), 10, 'foobar');
     });
     mount(
@@ -393,7 +393,7 @@ describe('DOM OPS', () => {
       throw new Error('Should be caught');
       return 'Never';
     }
-    const obs = new Observable(() => {
+    const obs = new Observable<AktaNode>(() => {
       throw new Error('Invalid observable');
     });
     const spy = jest.spyOn(global.console, 'error');
@@ -402,7 +402,7 @@ describe('DOM OPS', () => {
     expect(spy.mock.calls.length).toBe(1);
     mount(<div>{obs}</div>, root);
     expect(spy.mock.calls.length).toBe(2);
-    const even = new Subject();
+    const even = new Subject<AktaNode>();
     mount(<div>{even}</div>, root);
 
     even.next(jsx(ErrorImmediately, {}));
@@ -439,6 +439,45 @@ describe('DOM OPS', () => {
           <Fragment>Fragment</Fragment>,
           <Fragment key="foo">Fragment2</Fragment>,
         ]}
+      </div>,
+      root
+    );
+    expect(root).toMatchSnapshot();
+    unsub();
+  });
+
+  it('should accept html elements', async () => {
+    const root = document.createElement('div');
+    const el = document.createElement('div');
+    el.innerHTML = 'foobar';
+    function Comment() {
+      const el2 = document.createElement('div');
+      el2.innerHTML = 'comment';
+      return el2;
+    }
+    const el3 = document.createElement('div');
+    el3.innerHTML = 'el3';
+    const unsub = mount(
+      <div>
+        {el}
+        <Comment />
+        {from([el3])}
+      </div>,
+      root
+    );
+    expect(root).toMatchSnapshot();
+    unsub();
+  });
+
+  it('should accept html elements', async () => {
+    const root = document.createElement('div');
+    const el = document.createElement('div');
+    el.innerHTML = 'el1';
+    const unsub = mount(
+      <div>
+        <span>{el}</span>
+        <span>{el}</span>
+        <span>{el}</span>
       </div>,
       root
     );

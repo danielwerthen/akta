@@ -52,6 +52,36 @@ exports[`DOM OPS should accept Fragments with keys 1`] = `
 </div>
 `;
 
+exports[`DOM OPS should accept html elements 1`] = `
+<div>
+  <div>
+    <div>
+      foobar
+    </div>
+    <div>
+      comment
+    </div>
+    <div>
+      el3
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DOM OPS should accept html elements 2`] = `
+<div>
+  <div>
+    <span />
+    <span />
+    <span>
+      <div>
+        el1
+      </div>
+    </span>
+  </div>
+</div>
+`;
+
 exports[`DOM OPS should allow prepared elements to be detachable 1`] = `
 Object {
   "$$type": Symbol(Akta element),

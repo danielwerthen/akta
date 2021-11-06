@@ -17,6 +17,7 @@ export type AktaNode =
   | AsyncGenerator<AktaNode, AktaNode>
   | string
   | number
+  | HTMLElement
   | null
   | AktaNode[];
 
