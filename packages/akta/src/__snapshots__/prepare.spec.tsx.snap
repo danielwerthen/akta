@@ -90,19 +90,25 @@ exports[`prepare takes observable nodes and inserts them in the correct order: s
 </div>
 `;
 
-exports[`prepare unsubscribes to removed elements 1`] = `Array []`;
-
 exports[`prepare unsubscribes to removed elements: initial 1`] = `
 <div>
   
 </div>
 `;
 
-exports[`prepare unsubscribes to removed elements: initial 2`] = `
+exports[`prepare unsubscribes to removed elements: with obs 1`] = `
 <div>
   <p>
     alpha
   </p>
   Observable!
+</div>
+`;
+
+exports[`prepare unsubscribes to removed elements: without obs 1`] = `
+<div>
+  <p>
+    alpha
+  </p>
 </div>
 `;

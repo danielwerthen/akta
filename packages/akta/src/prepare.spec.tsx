@@ -1,15 +1,17 @@
 import { Observable, of, Subject } from 'rxjs';
-import { BlueprintNode, prepare, Subscriber } from './prepare';
+import { BlueprintNode, prepare, PrepContext, PrepState } from './prepare';
 
-function render(blueprint: string | BlueprintNode, type: string = 'div') {
+function render(
+  blueprint: string | BlueprintNode,
+  type: string = 'div',
+  ctx: PrepContext = new PrepContext()
+) {
   const parent = document.createElement(type);
   const node = prepare(
     typeof blueprint === 'string'
       ? document.createTextNode(blueprint)
       : blueprint,
-    {
-      subscriber: new Subscriber(),
-    }
+    ctx
   );
   if (Array.isArray(node)) {
     parent.append(...node);
@@ -32,13 +34,22 @@ describe('prepare', () => {
     const sub1 = new Subject<BlueprintNode>();
     const sub2 = new Subject<BlueprintNode>();
     const sub3 = new Subject<BlueprintNode>();
-    const el = render([of(document.createTextNode('alpha')), sub1, sub2, sub3]);
+    const ctx = new PrepContext();
+    const el = render(
+      [of(document.createTextNode('alpha')), sub1, sub2, sub3],
+      'div',
+      ctx
+    );
+    expect(ctx.state.value).toEqual(PrepState.init);
     sub3.next(render('sub3', 'p'));
     expect(el).toMatchSnapshot('sub3');
+    expect(ctx.state.value).toEqual(PrepState.init);
     sub1.next(render('sub1', 'p'));
     expect(el).toMatchSnapshot('sub1');
+    expect(ctx.state.value).toEqual(PrepState.init);
     sub2.next(render('sub2', 'p'));
     expect(el).toMatchSnapshot('sub2');
+    expect(ctx.state.value).toEqual(PrepState.active);
     sub2.next(null);
     expect(el).toMatchSnapshot('sub2-empty');
     sub1.next(render('sub1', 'span'));
@@ -54,10 +65,16 @@ describe('prepare', () => {
       sub.next(document.createTextNode('Observable!'));
       return onUnSub;
     });
-    const el = render(sub);
+    const ctx = new PrepContext();
+    const el = render(sub, 'div', ctx);
     expect(el).toMatchSnapshot('initial');
+    expect(ctx.state.value).toEqual(PrepState.init);
     sub.next([render('alpha', 'p'), obs]);
-    expect(el).toMatchSnapshot('initial');
-    expect(onUnSub.mock.calls).toMatchSnapshot();
+    expect(ctx.state.value).toEqual(PrepState.active);
+    expect(el).toMatchSnapshot('with obs');
+    expect(onUnSub.mock.calls.length).toEqual(0);
+    sub.next([render('alpha', 'p')]);
+    expect(el).toMatchSnapshot('without obs');
+    expect(onUnSub.mock.calls.length).toEqual(1);
   });
 });
