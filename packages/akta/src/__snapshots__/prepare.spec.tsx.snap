@@ -1,5 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`prepare handles jsx 1`] = `
+<div>
+  <p
+    class="daniel"
+  >
+    Akta 
+    5
+  </p>
+</div>
+`;
+
 exports[`prepare takes nested arrays of elements 1`] = `
 <div>
   <p>

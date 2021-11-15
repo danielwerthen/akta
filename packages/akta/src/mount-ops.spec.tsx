@@ -469,7 +469,7 @@ describe('DOM OPS', () => {
     unsub();
   });
 
-  it('should accept html elements', async () => {
+  it.skip('should accept html elements', async () => {
     const root = document.createElement('div');
     const el = document.createElement('div');
     el.innerHTML = 'el1';

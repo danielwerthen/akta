@@ -1,53 +1,10 @@
-import { BehaviorSubject, isObservable, Observable, Subscription } from 'rxjs';
-
-export enum PrepState {
-  init = 'init',
-  active = 'active',
-  terminated = 'terminated',
-}
-
-export class PrepContext {
-  subscriptions: Subscription[] = [];
-  teardowns: Function[] = [];
-  dependencies: number = 0;
-  state: BehaviorSubject<PrepState> = new BehaviorSubject(PrepState.init);
-  spawn() {
-    return new PrepContext();
-  }
-  terminate() {
-    for (let sub of this.subscriptions) {
-      sub.unsubscribe();
-    }
-    for (let cb of this.teardowns) {
-      cb();
-    }
-    this.state.next(PrepState.terminated);
-  }
-  placeholder(): ChildNode {
-    const el: Detachable = document.createTextNode('');
-    el.onDetach = () => {
-      this.dependencies -= 1;
-      if (this.dependencies === 0) {
-        this.state.next(PrepState.active);
-      }
-    };
-    this.dependencies += 1;
-    return el;
-  }
-  monitor(): void {
-    if (this.dependencies < 1) {
-      this.state.next(PrepState.active);
-      return;
-    }
-  }
-}
+import { AktaNode, isAktaElement } from './types';
+import { isObservable } from 'rxjs';
+import { RenderingContext, RenderingState } from './rendering-context';
+import { renderElement } from './render-element';
+import { DependencyMap } from './dependency-map';
 
 export type NodeInstance = ChildNode | [ChildNode, ...ChildNode[]];
-export type BlueprintNode =
-  | ChildNode
-  | Array<BlueprintNode>
-  | Observable<BlueprintNode>
-  | null;
 
 export type Detachable = ChildNode & {
   onDetach?: () => void;
@@ -95,15 +52,16 @@ function replace(next: NodeInstance, old: NodeInstance) {
 }
 
 export function prepare(
-  blueprint: BlueprintNode,
-  ctx: PrepContext,
+  blueprint: AktaNode,
+  ctx: RenderingContext,
+  deps: DependencyMap,
   recursive: boolean = false
 ): NodeInstance {
   try {
     if (Array.isArray(blueprint)) {
       const result: Array<ChildNode> = [];
       for (let item of blueprint) {
-        const prep = prepare(item, ctx, true);
+        const prep = prepare(item, ctx, deps, true);
         if (Array.isArray(prep)) {
           result.push(...prep);
         } else {
@@ -116,18 +74,18 @@ export function prepare(
       return result as NodeInstance;
     } else if (isObservable(blueprint)) {
       let instance: NodeInstance | null = null;
-      let activeSpawn: PrepContext | null = null;
+      let activeSpawn: RenderingContext | null = null;
       const sub = blueprint.subscribe({
         next: next => {
           if (activeSpawn) {
             activeSpawn.terminate();
           }
           activeSpawn = ctx.spawn();
-          const nextInstance = prepare(next, activeSpawn);
-          if (activeSpawn.state.value === PrepState.init) {
+          const nextInstance = prepare(next, activeSpawn, deps);
+          if (activeSpawn.state.value === RenderingState.init) {
             ctx.dependencies += 1;
             const sub = activeSpawn.state.subscribe(state => {
-              if (state !== PrepState.init) {
+              if (state !== RenderingState.init) {
                 sub.unsubscribe();
               }
             });
@@ -151,8 +109,14 @@ export function prepare(
     } else if (blueprint === null) {
       const empty = document.createTextNode('');
       return empty;
+    } else if (typeof blueprint === 'string') {
+      return document.createTextNode(blueprint);
+    } else if (typeof blueprint === 'number') {
+      return document.createTextNode(blueprint.toString());
+    } else if (isAktaElement(blueprint)) {
+      return renderElement(blueprint, ctx, deps);
     } else {
-      return blueprint;
+      return blueprint as HTMLElement;
     }
   } finally {
     if (!recursive) {
