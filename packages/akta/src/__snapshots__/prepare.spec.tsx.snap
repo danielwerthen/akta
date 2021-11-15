@@ -14,6 +14,20 @@ exports[`prepare takes nested arrays of elements 1`] = `
 </div>
 `;
 
+exports[`prepare takes nested arrays of observables of arrays 1`] = `
+<div>
+  <div>
+    daniel
+  </div>
+  <div>
+    kalle
+  </div>
+  <p>
+    zeta
+  </p>
+</div>
+`;
+
 exports[`prepare takes observable nodes and inserts them in the correct order: sub1 1`] = `
 <div>
   alpha

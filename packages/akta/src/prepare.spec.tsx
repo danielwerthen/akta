@@ -1,4 +1,4 @@
-import { Observable, of, Subject } from 'rxjs';
+import { from, Observable, of, Subject } from 'rxjs';
 import { BlueprintNode, prepare, PrepContext, PrepState } from './prepare';
 
 function render(
@@ -76,5 +76,15 @@ describe('prepare', () => {
     sub.next([render('alpha', 'p')]);
     expect(el).toMatchSnapshot('without obs');
     expect(onUnSub.mock.calls.length).toEqual(1);
+  });
+  it('takes nested arrays of observables of arrays', () => {
+    const el = render([
+      from([
+        [render('alpha'), render('beta')],
+        [render('daniel'), render('kalle')],
+      ]),
+      render('zeta', 'p'),
+    ]);
+    expect(el).toMatchSnapshot();
   });
 });
