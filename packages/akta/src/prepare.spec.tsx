@@ -2,7 +2,11 @@
 import { AktaNode, DependencyMap } from './index';
 import { from, Observable, of, Subject } from 'rxjs';
 import { prepare } from './prepare';
-import { RenderingContext, RenderingState } from './rendering-context';
+import {
+  renderingContext,
+  RenderingContext,
+  RenderingState,
+} from './rendering-context';
 import { useNext } from './dependencies';
 
 function render(
@@ -11,13 +15,18 @@ function render(
   ctx: RenderingContext = new RenderingContext()
 ) {
   const parent = document.createElement(type);
-  const node = prepare(blueprint, ctx, new DependencyMap());
-  if (Array.isArray(node)) {
-    parent.append(...node);
-  } else {
-    parent.append(node);
+  renderingContext.setContextUnsafe(ctx);
+  try {
+    const node = prepare(blueprint, new DependencyMap());
+    if (Array.isArray(node)) {
+      parent.append(...node);
+    } else {
+      parent.append(node);
+    }
+    return parent;
+  } finally {
+    renderingContext.resetContextUnsafe(ctx);
   }
-  return parent;
 }
 
 describe('prepare', () => {

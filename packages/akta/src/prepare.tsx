@@ -1,6 +1,10 @@
 import { AktaNode, isAktaElement } from './types';
 import { isObservable } from 'rxjs';
-import { RenderingContext, RenderingState } from './rendering-context';
+import {
+  renderingContext,
+  RenderingContext,
+  RenderingState,
+} from './rendering-context';
 import { renderElement } from './render-element';
 import { DependencyMap } from './dependency-map';
 
@@ -53,15 +57,15 @@ function replace(next: NodeInstance, old: NodeInstance) {
 
 export function prepare(
   blueprint: AktaNode,
-  ctx: RenderingContext,
   deps: DependencyMap,
   recursive: boolean = false
 ): NodeInstance {
+  const ctx = renderingContext.getContext();
   try {
     if (Array.isArray(blueprint)) {
       const result: Array<ChildNode> = [];
       for (let item of blueprint) {
-        const prep = prepare(item, ctx, deps, true);
+        const prep = prepare(item, deps, true);
         if (Array.isArray(prep)) {
           result.push(...prep);
         } else {
@@ -81,26 +85,30 @@ export function prepare(
             activeSpawn.terminate();
           }
           activeSpawn = ctx.spawn();
-          const nextInstance = prepare(next, activeSpawn, deps);
-          if (activeSpawn.state.value === RenderingState.init) {
-            ctx.dependencies += 1;
-            const sub = activeSpawn.state.subscribe(state => {
-              if (state !== RenderingState.init) {
-                sub.unsubscribe();
-              }
-            });
-            sub.add(() => {
-              ctx.dependencies -= 1;
-            });
-            ctx.subscriptions.push(sub);
+          renderingContext.setContextUnsafe(activeSpawn);
+          try {
+            const nextInstance = prepare(next, deps);
+            if (activeSpawn.state.value === RenderingState.init) {
+              ctx.dependencies += 1;
+              const sub = activeSpawn.state.subscribe(state => {
+                if (state !== RenderingState.init) {
+                  sub.unsubscribe();
+                }
+              });
+              sub.add(() => {
+                ctx.dependencies -= 1;
+              });
+              ctx.subscriptions.push(sub);
+            }
+            if (instance) {
+              replace(nextInstance, instance);
+            }
+            instance = nextInstance;
+          } finally {
+            renderingContext.resetContextUnsafe(activeSpawn);
           }
-          if (instance) {
-            replace(nextInstance, instance);
-          }
-          instance = nextInstance;
         },
       });
-      ctx.teardowns.push(() => activeSpawn?.terminate());
       ctx.subscriptions.push(sub);
       if (!instance) {
         instance = ctx.placeholder();
@@ -114,7 +122,7 @@ export function prepare(
     } else if (typeof blueprint === 'number') {
       return document.createTextNode(blueprint.toString());
     } else if (isAktaElement(blueprint)) {
-      return renderElement(blueprint, ctx, deps);
+      return renderElement(blueprint, deps);
     } else {
       return blueprint as HTMLElement;
     }

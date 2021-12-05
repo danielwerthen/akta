@@ -1,3 +1,4 @@
+import { createSyncContext } from './sync-context';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 export enum RenderingState {
@@ -18,7 +19,9 @@ export class RenderingContext {
     RenderingState.init
   );
   spawn() {
-    return new RenderingContext();
+    const child = new RenderingContext();
+    this.teardowns.push(() => child.terminate());
+    return child;
   }
   terminate() {
     for (let sub of this.subscriptions) {
@@ -47,3 +50,5 @@ export class RenderingContext {
     }
   }
 }
+
+export const renderingContext = createSyncContext<RenderingContext>();

@@ -12,8 +12,11 @@ export function createSyncContext<T>() {
     setContextUnsafe(ctx: T) {
       stack.unshift(ctx);
     },
-    resetContextUnsafe() {
-      stack.shift();
+    resetContextUnsafe(ctx?: T) {
+      const prev = stack.shift();
+      if (ctx && ctx !== prev) {
+        throw new Error('Sync Context was manipulated incorrectly');
+      }
     },
     getContext(): T {
       return stack[0];

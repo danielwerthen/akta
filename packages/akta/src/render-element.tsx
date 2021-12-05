@@ -1,15 +1,15 @@
 import { AktaElement, AktaNode } from './types';
 import { NodeInstance, prepare } from './prepare';
-import { RenderingContext } from './rendering-context';
+import { renderingContext } from './rendering-context';
 import { renderComponent } from './render-component';
 import { DependencyMap } from './dependency-map';
 import { elementsDependency } from './dependencies';
 
 export function renderElement(
   element: AktaElement,
-  ctx: RenderingContext,
   deps: DependencyMap
 ): NodeInstance {
+  const ctx = renderingContext.getContext();
   const { type, props } = element;
   if (typeof type === 'string') {
     const element = document.createElement(type);
@@ -18,7 +18,7 @@ export function renderElement(
     for (var key in props) {
       if (key === 'children') {
         const children = props[key] as AktaNode;
-        const instances = prepare(children, ctx, deps);
+        const instances = prepare(children, deps);
         if (Array.isArray(instances)) {
           element.append(...instances);
         } else {
@@ -33,9 +33,9 @@ export function renderElement(
     }
     return element;
   } else if (!type) {
-    return prepare(props.children as AktaNode, ctx, deps);
+    return prepare(props.children as AktaNode, deps);
   } else {
     const element = renderComponent(type, props, ctx, deps);
-    return prepare(element, ctx, deps);
+    return prepare(element, deps);
   }
 }
