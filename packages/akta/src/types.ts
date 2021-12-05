@@ -18,7 +18,6 @@ export type AktaNode =
   | string
   | number
   | ChildNode
-  | Promise<ChildNode>
   | null
   | AktaNode[];
 

@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`render should rendering akta blueprint 1`] = `
+<div>
+  <p>
+    Blueprint
+  </p>
+</div>
+`;
