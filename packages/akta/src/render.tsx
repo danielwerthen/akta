@@ -2,6 +2,7 @@ import { AktaNode } from './types';
 import { DependencyMap } from './dependency-map';
 import { prepare } from './prepare';
 import { renderingContext, RenderingContext } from './rendering-context';
+import { addDelegatedEvents } from './events';
 
 export function render(
   blueprint: AktaNode,
@@ -9,9 +10,9 @@ export function render(
   ctx: RenderingContext = new RenderingContext()
 ): () => void {
   renderingContext.setContextUnsafe(ctx);
+  addDelegatedEvents(parent);
   try {
     const node = prepare(blueprint, new DependencyMap());
-    console.log(node);
     if (Array.isArray(node)) {
       parent.append(...node);
     } else {

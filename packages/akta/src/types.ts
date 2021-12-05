@@ -1,5 +1,4 @@
 import { Observable } from 'rxjs';
-import { LazyAttacher } from './mount-ops';
 
 export type AktaElement<
   P extends { [key: string]: unknown } = { [key: string]: unknown }
@@ -33,13 +32,6 @@ export function isAktaElement(node: unknown): node is AktaElement {
 export interface ElementProperties {}
 
 export type AktaComponent<PROPS extends {}> = (props: PROPS) => AktaNode;
-
-export function AktaPreparedComponent(_props: {
-  attacher: LazyAttacher;
-  observable?: Observable<unknown>;
-}) {
-  return null;
-}
 
 export function Fragment({ children }: { children: AktaNode }) {
   return children;

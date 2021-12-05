@@ -9,7 +9,16 @@ exports[`DOM OPS Array nodes are rendered correctly 1`] = `
 </div>
 `;
 
-exports[`DOM OPS Observable child nodes are rendered correctly 1`] = `<div />`;
+exports[`DOM OPS Observable child nodes are rendered correctly 1`] = `
+<div>
+  <p>
+    top
+    immediate2
+    
+    bottom
+  </p>
+</div>
+`;
 
 exports[`DOM OPS Observable child nodes are rendered correctly 2`] = `
 <div>
@@ -109,17 +118,26 @@ exports[`DOM OPS should handle observable child with null siblings 1`] = `
 </div>
 `;
 
-exports[`DOM OPS should handle observable child with null siblings 2`] = `<div />`;
+exports[`DOM OPS should handle observable child with null siblings 2`] = `
+<div>
+  
+  
+  
+</div>
+`;
 
 exports[`DOM OPS should handle observable child with null siblings 3`] = `
 <div>
   2
+  
+  
 </div>
 `;
 
 exports[`DOM OPS should handle observable child with null siblings 4`] = `
 <div>
   2
+  
   3
 </div>
 `;
@@ -132,49 +150,12 @@ exports[`DOM OPS should handle observable classNames 1`] = `
 </div>
 `;
 
-exports[`DOM OPS should handle prepare 1`] = `
-<div>
-  <p>
-    Loading
-  </p>
-</div>
-`;
-
-exports[`DOM OPS should handle prepare 2`] = `
-<div>
-  <p>
-    <span>
-      Finally
-    </span>
-  </p>
-</div>
-`;
-
 exports[`DOM OPS should handle teardown 1`] = `
 <div>
   <div>
     <p>
       Data3
     </p>
-  </div>
-</div>
-`;
-
-exports[`DOM OPS should not activate out of order prepared children: first 1`] = `
-<div>
-  <div>
-    first
-    second
-    <div>
-      <h2>
-        Links
-      </h2>
-      <div
-        id="55"
-      >
-        Test
-      </div>
-    </div>
   </div>
 </div>
 `;
@@ -240,33 +221,16 @@ exports[`DOM OPS should remove old array items when sizes differ 2`] = `
 
 exports[`DOM OPS should remove old array items when sizes differ 3`] = `
 <div>
-  <div />
+  <div>
+    
+  </div>
 </div>
-`;
-
-exports[`Mount ops 2 should create deterministic structures 1`] = `
-<article>
-  <div />
-  Baz
-  Foobar
-  <div />
-</article>
 `;
 
 exports[`Observe node Should handle events 1`] = `
 <article>
   <div>
     body
-  </div>
-</article>
-`;
-
-exports[`Observe node shoudl work 1`] = `
-<article>
-  <div>
-    baz
-    test
-    foobar
   </div>
 </article>
 `;
