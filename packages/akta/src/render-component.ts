@@ -22,6 +22,9 @@ function isGenerator(
   }
   return false;
 }
+function isPromise(obj: unknown): obj is Promise<unknown> {
+  return obj ? typeof (obj as Promise<unknown>).then === 'function' : false;
+}
 
 function setupTeardown(deps: DependencyMap, ctx: RenderingContext) {
   const teardowns: TeardownFunction[] = [];
@@ -47,13 +50,17 @@ export function renderComponent<PROPS>(
       return element;
     }
     if (isGenerator(element)) {
+      const generator = element;
       const continuation = lazy();
-      deps.provide(continuationDependency, continuation);
+      deps.provide(continuationDependency, () => continuation);
       try {
         dependecyContext.setContextUnsafe(deps);
-        const generated = element.next();
+        const initial = generator.next();
         const observable = new Observable<AktaNode>(subscriber => {
-          Promise.resolve(generated).then(({ value, done }) => {
+          function mapGenerated({
+            value,
+            done,
+          }: IteratorResult<AktaNode, AktaNode>) {
             subscriber.next(value);
             if (done) {
               subscriber.complete();
@@ -66,7 +73,7 @@ export function renderComponent<PROPS>(
               }
               try {
                 dependecyContext.setContextUnsafe(deps);
-                const generated = element.next(input);
+                const generated = generator.next(input);
                 return from(Promise.resolve(generated)).pipe(
                   map(({ value, done }) => {
                     if (isComplete) {
@@ -84,7 +91,12 @@ export function renderComponent<PROPS>(
                 dependecyContext.resetContextUnsafe();
               }
             });
-          });
+          }
+          if (isPromise(initial)) {
+            Promise.resolve(initial).then(mapGenerated);
+          } else {
+            mapGenerated(initial);
+          }
         });
         return observable;
       } finally {

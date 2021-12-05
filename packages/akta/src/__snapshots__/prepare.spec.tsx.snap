@@ -1,5 +1,30 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`prepare handles async generator components 1`] = `
+<div>
+  <p>
+    Component 
+    42
+  </p>
+</div>
+`;
+
+exports[`prepare handles components 1`] = `
+<div>
+  <p>
+    Component
+  </p>
+</div>
+`;
+
+exports[`prepare handles generator components 1`] = `
+<div>
+  <p>
+    Initial
+  </p>
+</div>
+`;
+
 exports[`prepare handles jsx 1`] = `
 <div>
   <p

@@ -3,6 +3,7 @@ import { AktaNode, DependencyMap } from './index';
 import { from, Observable, of, Subject } from 'rxjs';
 import { prepare } from './prepare';
 import { RenderingContext, RenderingState } from './rendering-context';
+import { useNext } from './dependencies';
 
 function render(
   blueprint: AktaNode,
@@ -89,6 +90,33 @@ describe('prepare', () => {
     const el = render([
       <p className="daniel">Akta {of(<span>Number 5</span>)}</p>,
     ]);
+    expect(el).toMatchSnapshot();
+  });
+  it('handles components', () => {
+    function Component() {
+      return <p>Component</p>;
+    }
+    const el = render([<Component />]);
+    expect(el).toMatchSnapshot();
+  });
+  it('handles generator components', () => {
+    function* Component() {
+      yield (<p>Initial</p>);
+      return <p>Component</p>;
+    }
+    const el = render([<Component />]);
+    expect(el).toMatchSnapshot();
+  });
+  it('handles async generator components', async () => {
+    const cont: any = [];
+    async function* Component() {
+      const test = useNext();
+      cont.push(test);
+      const res: number = yield (<p>Initial</p>);
+      return <p>Component {res}</p>;
+    }
+    const el = render([<Component />]);
+    await cont[0](42);
     expect(el).toMatchSnapshot();
   });
 });
