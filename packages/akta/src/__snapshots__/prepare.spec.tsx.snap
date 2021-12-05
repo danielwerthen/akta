@@ -6,7 +6,9 @@ exports[`prepare handles jsx 1`] = `
     class="daniel"
   >
     Akta 
-    5
+    <span>
+      Number 5
+    </span>
   </p>
 </div>
 `;

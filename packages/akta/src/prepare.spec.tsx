@@ -86,7 +86,9 @@ describe('prepare', () => {
     expect(el).toMatchSnapshot();
   });
   it('handles jsx', () => {
-    const el = render([<p className="daniel">Akta {of(5)}</p>]);
+    const el = render([
+      <p className="daniel">Akta {of(<span>Number 5</span>)}</p>,
+    ]);
     expect(el).toMatchSnapshot();
   });
 });

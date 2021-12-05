@@ -33,8 +33,10 @@ export function useNext<T extends AktaNode, RETURN extends AktaNode, NEXT>(
   };
 }
 
-export function useTeardown(fn: TeardownFunction) {
-  const ctx = dependecyContext.getContext();
+export function useTeardown(
+  fn: TeardownFunction,
+  ctx: DependencyMap = dependecyContext.getContext()
+) {
   ctx.provide(teardownDependency, fns => {
     if (!fns) {
       return [fn];
