@@ -10,23 +10,11 @@ import { DependencyMap } from './dependency-map';
 
 export type NodeInstance = ChildNode | [ChildNode, ...ChildNode[]];
 
-export type Detachable = ChildNode & {
-  onDetach?: () => void;
-};
-
-function teardown(item: ChildNode) {
-  const detachable = item as Detachable;
-  if (typeof detachable.onDetach === 'function') {
-    detachable.onDetach();
-  }
-}
-
 function remove(item: NodeInstance) {
   if (Array.isArray(item)) {
     item.forEach(remove);
   } else {
     item.remove();
-    teardown(item);
   }
 }
 
@@ -48,10 +36,8 @@ function replace(next: NodeInstance, old: NodeInstance) {
   }
   if (Array.isArray(next)) {
     anchor.replaceWith(...next);
-    teardown(anchor);
   } else {
     anchor.replaceWith(next);
-    teardown(anchor);
   }
 }
 

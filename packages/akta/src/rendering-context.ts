@@ -32,13 +32,34 @@ export class RenderingContext {
     }
     this.state.next(RenderingState.terminated);
   }
-  placeholder(): ChildNode {
+  placeholder2(): ChildNode {
     const el: Detachable = document.createTextNode('');
     el.onDetach = () => {
       this.dependencies -= 1;
       if (this.dependencies === 0) {
         this.state.next(RenderingState.active);
       }
+    };
+    this.dependencies += 1;
+    return el;
+  }
+  placeholder(): ChildNode {
+    const el = document.createTextNode('');
+    const decrement = () => {
+      this.dependencies -= 1;
+      if (this.dependencies === 0) {
+        this.state.next(RenderingState.active);
+      }
+    };
+    const removeFn = el.remove;
+    el.remove = function() {
+      decrement();
+      removeFn.apply(el);
+    };
+    const replaceWithFn = el.replaceWith;
+    el.replaceWith = function(...args: unknown[]) {
+      decrement();
+      replaceWithFn.apply(el, args);
     };
     this.dependencies += 1;
     return el;
