@@ -74,19 +74,28 @@ export function renderComponent<PROPS>(
               try {
                 dependecyContext.setContextUnsafe(deps);
                 const generated = generator.next(input);
-                return from(Promise.resolve(generated)).pipe(
-                  map(({ value, done }) => {
-                    if (isComplete) {
-                      return;
-                    }
-                    subscriber.next(value);
-                    if (done) {
-                      isComplete = true;
-                      subscriber.complete();
-                      return;
-                    }
-                  })
-                );
+                if (isPromise(generated)) {
+                  return from(generated).pipe(
+                    map(({ value, done }) => {
+                      if (isComplete) {
+                        return;
+                      }
+                      subscriber.next(value);
+                      if (done) {
+                        isComplete = true;
+                        subscriber.complete();
+                        return;
+                      }
+                    })
+                  );
+                }
+                const { value, done } = generated;
+                subscriber.next(value);
+                if (done) {
+                  isComplete = true;
+                  subscriber.complete();
+                }
+                return of(void 0);
               } finally {
                 dependecyContext.resetContextUnsafe();
               }
