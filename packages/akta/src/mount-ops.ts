@@ -332,7 +332,7 @@ export function observeNode(
           : namespace;
       if (typeof type === 'string') {
         const element = ns
-          ? document.createElementNS(ns, 'svg')
+          ? document.createElementNS(ns, type)
           : document.createElement(type);
         let childAttacher: null | LazyAttacher = null;
 
