@@ -321,7 +321,10 @@ export function observeNode(
     } else if (isAktaElement(node)) {
       const { type, props } = node;
       if (typeof type === 'string') {
-        const element = document.createElement(type);
+        const element =
+          type === 'svg'
+            ? document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+            : document.createElement(type);
         let childAttacher: null | LazyAttacher = null;
 
         const elements = deps.peek(elementsDependency);

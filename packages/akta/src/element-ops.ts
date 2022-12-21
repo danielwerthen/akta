@@ -41,9 +41,7 @@ export function unmountElement<T extends ChildNode>(element: T) {
   }
 }
 
-function standardPropMethod<T extends HTMLElement>(
-  key: string
-): AttributeMethod {
+function standardPropMethod<T extends Element>(key: string): AttributeMethod {
   return function(element: T, value: unknown) {
     if (isObservable(value)) {
       return value.pipe(
@@ -62,9 +60,7 @@ function isSubject<T>(value: unknown): value is Subject<T> {
   return !!value && typeof (value as Subject<T>).next === 'function';
 }
 
-function standardEventMethod<T extends HTMLElement>(
-  key: string
-): AttributeMethod {
+function standardEventMethod<T extends Element>(key: string): AttributeMethod {
   const eventName = key.substr(2).toLowerCase();
   if (DelegatedEvents.has(eventName)) {
     const key = `__${eventName}`;
@@ -84,14 +80,12 @@ function standardEventMethod<T extends HTMLElement>(
   };
 }
 
-export type AttributeMethod<T extends HTMLElement = HTMLElement> = (
+export type AttributeMethod<T extends Element = Element> = (
   element: T,
   value: unknown
 ) => Observable<unknown> | void;
 
-export class BaseAttributes<
-  T extends HTMLElement = HTMLElement
-> extends MetaObject<
+export class BaseAttributes<T extends Element = Element> extends MetaObject<
   (element: T, value: unknown) => Observable<unknown> | void
 > {
   onMount(element: T, value: Subject<T>) {
@@ -141,7 +135,7 @@ export class BaseAttributes<
   }
 }
 
-export class AllElements extends MetaObject<BaseAttributes<HTMLElement>> {
+export class AllElements extends MetaObject<BaseAttributes<Element>> {
   _base = new BaseAttributes();
   [MethodMissing](_key: string) {
     const base = this._base;
