@@ -31,7 +31,7 @@ export function isAktaElement(node: unknown): node is AktaElement {
 
 export interface ElementProperties {}
 
-export type AktaComponent<PROPS extends {}> = (props: PROPS) => AktaNode;
+export type AktaComponent<PROPS> = (props: PROPS) => AktaNode;
 
 export function AktaPreparedComponent(_props: {
   attacher: LazyAttacher;

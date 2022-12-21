@@ -45,20 +45,6 @@ function standardPropMethod<T extends HTMLElement>(
   key: string
 ): AttributeMethod {
   return function(element: T, value: unknown) {
-    if (!(key in element)) {
-      if (key in element.style) {
-        if (isObservable(value)) {
-          return value.pipe(
-            tap(item => {
-              element.style[(key as unknown) as number] = item + '';
-            })
-          );
-        } else {
-          element.style[(key as unknown) as number] = value + '';
-          return;
-        }
-      }
-    }
     if (isObservable(value)) {
       return value.pipe(
         tap(item => {
