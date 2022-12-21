@@ -1,5 +1,17 @@
 # akta
 
+## 0.4.0
+
+### Minor Changes
+
+- [`d980f22`](https://github.com/danielwerthen/akta/commit/d980f22d59907b127cd0003c11dd5b984a55cc32) Thanks [@danielwerthen](https://github.com/danielwerthen)! - Update element props
+
+  Simpler approach to event handlers, remove the cleanup and hope that the element is garbage collected to avoid any leaked event handlers.
+
+  Handle null or undefined className in observable sequence
+
+* [`125c4e6`](https://github.com/danielwerthen/akta/commit/125c4e65049975fcb1bccfdfd3d90e0de2d47b47) Thanks [@danielwerthen](https://github.com/danielwerthen)! - Improved support for SVG and removed top level style attributes
+
 ## 0.3.0
 
 ### Minor Changes
