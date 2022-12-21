@@ -329,7 +329,7 @@ export function observeNode(
           ? 'http://www.w3.org/2000/svg'
           : typeof props['xmlns'] === 'string'
           ? props['xmlns']
-          : undefined;
+          : namespace;
       if (typeof type === 'string') {
         const element = ns
           ? document.createElementNS(ns, 'svg')
