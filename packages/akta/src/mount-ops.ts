@@ -277,7 +277,8 @@ type QueueItem = [
   DependencyMap,
   LazyAttacher,
   NodeObserver,
-  number[] | undefined
+  number[] | undefined,
+  string | undefined
 ];
 
 export function observeNode(
@@ -285,15 +286,18 @@ export function observeNode(
   _deps: DependencyMap,
   _attacher: LazyAttacher,
   _observer: NodeObserver,
-  _idx?: number[]
+  _idx?: number[],
+  _namespace?: string
 ): void {
-  const queue: QueueItem[] = [[_node, _deps, _attacher, _observer, _idx]];
+  const queue: QueueItem[] = [
+    [_node, _deps, _attacher, _observer, _idx, _namespace],
+  ];
   while (true) {
     const item = queue.shift();
     if (item === undefined) {
       break;
     }
-    const [node, deps, attacher, observer, idx] = item;
+    const [node, deps, attacher, observer, idx, namespace] = item;
     if (!node) {
       attacher.attach(null, idx ?? [0]);
     } else if (Array.isArray(node)) {
@@ -302,7 +306,7 @@ export function observeNode(
       for (let i = 0; i < Math.max(up, del); i++) {
         const indicies = idx ? [...idx, i] : [i];
         if (i < up) {
-          queue.push([node[i], deps, attacher, observer, indicies]);
+          queue.push([node[i], deps, attacher, observer, indicies, namespace]);
         } else {
           attacher.attach(null, indicies);
         }
@@ -320,11 +324,16 @@ export function observeNode(
       attacher.attach(document.createTextNode(node), idx ?? [0]);
     } else if (isAktaElement(node)) {
       const { type, props } = node;
+      const ns =
+        type === 'svg'
+          ? 'http://www.w3.org/2000/svg'
+          : typeof props['xmlns'] === 'string'
+          ? props['xmlns']
+          : undefined;
       if (typeof type === 'string') {
-        const element =
-          type === 'svg'
-            ? document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-            : document.createElement(type);
+        const element = ns
+          ? document.createElementNS(ns, 'svg')
+          : document.createElement(type);
         let childAttacher: null | LazyAttacher = null;
 
         const elements = deps.peek(elementsDependency);
@@ -332,7 +341,14 @@ export function observeNode(
           if (key === 'children') {
             const children = props[key] as AktaNode;
             childAttacher = new LazyAttacher();
-            queue.push([children, deps, childAttacher, observer, undefined]);
+            queue.push([
+              children,
+              deps,
+              childAttacher,
+              observer,
+              undefined,
+              ns,
+            ]);
           } else {
             const observable = elements[type][key](element, props[key]);
             if (observable) {
@@ -357,10 +373,10 @@ export function observeNode(
         });
       } else if (!type || type === Fragment) {
         const children = props.children as AktaNode;
-        queue.push([children, deps, attacher, observer, idx]);
+        queue.push([children, deps, attacher, observer, idx, namespace]);
       } else {
         const [element, nextDeps] = callComponent(type, props, deps);
-        queue.push([element, nextDeps, attacher, observer, idx]);
+        queue.push([element, nextDeps, attacher, observer, idx, namespace]);
 
         const fns = nextDeps.peek(teardownDependency);
         if (fns && fns.length > 0) {
