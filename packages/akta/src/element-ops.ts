@@ -43,6 +43,30 @@ export function unmountElement<T extends ChildNode>(element: T) {
 
 function standardPropMethod<T extends Element>(key: string): AttributeMethod {
   return function(element: T, value: unknown) {
+    if (
+      !(key in element) &&
+      (element instanceof HTMLElement || element instanceof SVGElement) &&
+      key in element.style
+    ) {
+      if (isObservable(value)) {
+        return value.pipe(
+          tap(item => {
+            element.style.setProperty(
+              key,
+              item + '',
+              element.style.getPropertyPriority(key)
+            );
+          })
+        );
+      } else {
+        element.style.setProperty(
+          key,
+          value + '',
+          element.style.getPropertyPriority(key)
+        );
+        return;
+      }
+    }
     if (isObservable(value)) {
       return value.pipe(
         tap(item => {

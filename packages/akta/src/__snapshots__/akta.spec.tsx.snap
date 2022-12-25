@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Akta should render a nested jsx blob 1`] = `
+<body>
+  <div
+    id="app"
+  >
+    <div>
+      <p
+        class="c0 c1 c2"
+        id="daniel"
+        style="color: black; background: gold;"
+      >
+        This is a paragraph
+      </p>
+      <button>
+        This is button
+      </button>
+    </div>
+  </div>
+</body>
+`;
+
+exports[`Akta should render a nested jsx blob 2`] = `
+".c0 {color: red;}
+(min-width: 100px)
+.c1 {color: blue;}
+(max-width: 500px) and (min-width: 200px)
+.c2 {color: yellow;}"
+`;
