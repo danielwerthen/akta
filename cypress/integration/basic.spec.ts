@@ -2,8 +2,8 @@
 
 describe('Smoke Test', () => {
   it('should render', () => {
-    cy.visit('http://localhost:1234');
+    cy.visit('http://localhost:8080/basic');
 
-    cy.get('[data-test-id="zop"]').contains('hello-worldzz');
+    cy.get('h1').contains('This will outline the basic options for akta');
   });
 });

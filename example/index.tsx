@@ -1,6 +1,7 @@
 import { AktaNode, ErrorBoundary, mount } from 'akta';
 import { Route, Router, Link } from 'akta-router';
 import { interval, map, startWith } from 'rxjs';
+import Basic from './pages/basic';
 import Index from './pages/index';
 import { Slow } from './pages/slow';
 
@@ -34,14 +35,18 @@ function Header() {
 }
 
 function ErrorComponent() {
-  return interval(1000).pipe(
-    startWith(-1),
-    map(i => {
-      if (i > 9) {
-        throw new Error('Invalid state');
-      }
-      return <h1>{9 - i} seconds until crash!</h1>;
-    })
+  return (
+    <div>
+      {interval(1000).pipe(
+        startWith(-1),
+        map(i => {
+          if (i > 9) {
+            throw new Error('Invalid state');
+          }
+          return <h1>{9 - i} seconds until crash!</h1>;
+        })
+      )}
+    </div>
   );
 }
 
@@ -64,6 +69,9 @@ function App() {
         >
           <Route path="/slow" exact>
             <Slow />
+          </Route>
+          <Route path="/basic" exact>
+            <Basic />
           </Route>
           <Route path="/" exact>
             <Index />
