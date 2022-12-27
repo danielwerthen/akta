@@ -13,9 +13,32 @@ exports[`Akta should render a nested jsx blob 1`] = `
       >
         This is a paragraph
       </p>
+      <div>
+        An observable element
+      </div>
       <button>
         This is button
       </button>
+      <div>
+        An observable component
+      </div>
+      <div>
+        <div
+          class="c3"
+        >
+          Leaf 1
+        </div>
+        <div
+          class="c4"
+        >
+          Leaf 2
+        </div>
+        <div
+          class="c0"
+        >
+          Leaf 3
+        </div>
+      </div>
     </div>
   </div>
 </body>
@@ -23,6 +46,8 @@ exports[`Akta should render a nested jsx blob 1`] = `
 
 exports[`Akta should render a nested jsx blob 2`] = `
 ".c0 {color: red;}
+.c3 {color: black;}
+.c4 {color: white;}
 (min-width: 100px)
 .c1 {color: blue;}
 (max-width: 500px) and (min-width: 200px)

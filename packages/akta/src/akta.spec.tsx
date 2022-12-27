@@ -1,4 +1,5 @@
 /** @jsxImportSource . */
+import { of } from 'rxjs';
 import { mount } from './mount-ops';
 
 function getCSS() {
@@ -35,6 +36,18 @@ describe('Akta', () => {
     document.getElementById('app')?.remove();
   });
   it('should render a nested jsx blob', () => {
+    function Component() {
+      return of(<div>An observable component</div>);
+    }
+    function NestedComponent() {
+      return (
+        <div>
+          <div $color="black">{of('Leaf 1')}</div>
+          <div $color="white">{of('Leaf 2')}</div>
+          <div $color="red">{of('Leaf 3')}</div>
+        </div>
+      );
+    }
     const cleanup = mount(
       <div>
         <p
@@ -47,7 +60,10 @@ describe('Akta', () => {
         >
           This is a paragraph
         </p>
+        {of(<div>An observable element</div>)}
         <button>This is button</button>
+        <Component />
+        <NestedComponent />
       </div>,
       container
     );
