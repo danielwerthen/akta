@@ -9,7 +9,7 @@ exports[`Akta should render a nested jsx blob 1`] = `
       <p
         class="c0 c1 c2"
         id="daniel"
-        style="color: black; background: gold;"
+        style="background: gray;"
       >
         This is a paragraph
       </p>
@@ -51,5 +51,5 @@ exports[`Akta should render a nested jsx blob 2`] = `
 (min-width: 100px)
 .c1 {color: blue;}
 (max-width: 500px) and (min-width: 200px)
-.c2 {color: yellow;}"
+.c2 {color: green;}"
 `;

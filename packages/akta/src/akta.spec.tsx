@@ -1,6 +1,8 @@
 /** @jsxImportSource . */
 import { of } from 'rxjs';
 import { mount } from './mount-ops';
+import { toMatchImageSnapshot } from 'jest-image-snapshot';
+import { createRenderer } from './test-utils/test-render';
 
 function getCSS() {
   const lines: string[] = [];
@@ -25,8 +27,21 @@ function getCSS() {
   return lines.join('\n');
 }
 
+declare global {
+  namespace jest {
+    interface Matchers<R> {
+      toMatchImageSnapshot(): R;
+    }
+  }
+}
+
+expect.extend({
+  toMatchImageSnapshot,
+});
+
 describe('Akta', () => {
   let container: HTMLElement;
+  const render = createRenderer();
   beforeEach(() => {
     container = document.createElement('div');
     container.id = 'app';
@@ -35,7 +50,7 @@ describe('Akta', () => {
   afterEach(() => {
     document.getElementById('app')?.remove();
   });
-  it('should render a nested jsx blob', () => {
+  it('should render a nested jsx blob', async () => {
     function Component() {
       return of(<div>An observable component</div>);
     }
@@ -54,9 +69,8 @@ describe('Akta', () => {
           id="daniel"
           $color="red"
           $color_min100="blue"
-          $color_max500_min200="yellow"
-          color="black"
-          background="gold"
+          $color_max500_min200="green"
+          background="gray"
         >
           This is a paragraph
         </p>
@@ -69,6 +83,9 @@ describe('Akta', () => {
     );
     expect(document.body).toMatchSnapshot();
     expect(getCSS()).toMatchSnapshot();
+    expect(
+      await render(document, { width: 400, height: 400 })
+    ).toMatchImageSnapshot();
     cleanup();
   });
 });
