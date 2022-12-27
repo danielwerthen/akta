@@ -49,7 +49,7 @@ exports[`Element ops should handle observable classNames 5`] = `
 `;
 
 exports[`Element ops should handle onclick events 1`] = `
-Array [
+[
   MouseEvent {
     "isTrusted": false,
   },
@@ -66,23 +66,23 @@ Array [
 `;
 
 exports[`Element ops should handle onclick functions 1`] = `
-Array [
-  Array [
+[
+  [
     MouseEvent {
       "isTrusted": false,
     },
   ],
-  Array [
+  [
     MouseEvent {
       "isTrusted": false,
     },
   ],
-  Array [
+  [
     MouseEvent {
       "isTrusted": false,
     },
   ],
-  Array [
+  [
     MouseEvent {
       "isTrusted": false,
     },

@@ -98,7 +98,7 @@ describe('Observe node', () => {
       const error = e as Error;
       const stackDepth = ((error.stack || '').match(/at observeNode/g) || [])
         .length;
-      expect(stackDepth).toEqual(1);
+      expect(stackDepth).toEqual(2);
       expect(root).toMatchSnapshot();
     }
   });

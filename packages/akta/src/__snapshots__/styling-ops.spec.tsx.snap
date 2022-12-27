@@ -46,47 +46,47 @@ exports[`styling-ops should attach style tags in the right order 1`] = `
 `;
 
 exports[`styling-ops should properly parse props 1`] = `
-Array [
-  Object {
+[
+  {
     "attributeName": "color",
     "specificity": 0,
   },
-  Object {
+  {
     "attributeName": "background-color",
     "specificity": 1,
   },
-  Object {
+  {
     "attributeName": "border-top-width",
     "specificity": 2,
   },
-  Object {
+  {
     "attributeName": "color",
     "media": "(max-width: 100px)",
     "specificity": 0,
   },
-  Object {
+  {
     "attributeName": "color",
     "media": "(max-width: 100px) and (min-width: 40px)",
     "specificity": 0,
   },
-  Object {
+  {
     "attributeName": "color",
     "media": "(max-width: 100px)",
     "pseudo": ":hover",
     "specificity": 0,
   },
-  Object {
+  {
     "attributeName": "color",
     "media": "(max-width: 100px)",
     "pseudo": ":hover:focus",
     "specificity": 0,
   },
-  Object {
+  {
     "attributeName": "color",
     "media": "(min-width: 1201px)",
     "specificity": 0,
   },
-  Object {
+  {
     "attributeName": "color",
     "pseudo": ":nth-child(2n)",
     "specificity": 0,
