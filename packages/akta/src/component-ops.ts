@@ -1,5 +1,4 @@
 import { from, isObservable, Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
 import {
   continuationDependency,
   dependecyContext,
@@ -17,6 +16,13 @@ function isGenerator(
   }
   if (typeof obj === 'object') {
     return typeof (obj as Generator<any, any, any>).next === 'function';
+  }
+  return false;
+}
+
+function isIteratorResult(obj: unknown): obj is IteratorResult<unknown> {
+  if (obj && typeof obj === 'object') {
+    return Reflect.has(obj, 'value') && Reflect.has(obj, 'done');
   }
   return false;
 }
@@ -39,43 +45,47 @@ export function callComponent<PROPS>(
     }
     if (isGenerator(element)) {
       const continuation = lazy();
-      deps.provide(continuationDependency, continuation);
+      deps.provide(continuationDependency, () => continuation);
       try {
         dependecyContext.setContextUnsafe(deps);
         const generated = element.next();
         const observable = new Observable<AktaNode>(subscriber => {
-          Promise.resolve(generated).then(({ value, done }) => {
+          let isDefined = false;
+          function process({
+            value,
+            done,
+          }: IteratorResult<AktaNode, AktaNode>) {
             subscriber.next(value);
             if (done) {
               subscriber.complete();
               return;
             }
-            let isComplete = false;
-            continuation.define(input => {
-              if (isComplete) {
-                return of();
-              }
-              try {
-                dependecyContext.setContextUnsafe(deps);
-                const generated = element.next(input);
-                return from(Promise.resolve(generated)).pipe(
-                  map(({ value, done }) => {
-                    if (isComplete) {
-                      return;
-                    }
-                    subscriber.next(value);
-                    if (done) {
-                      isComplete = true;
-                      subscriber.complete();
-                      return;
-                    }
-                  })
-                );
-              } finally {
-                dependecyContext.resetContextUnsafe();
-              }
-            });
-          });
+            if (!isDefined) {
+              isDefined = true;
+              continuation.define(input => {
+                if (!isGenerator(element)) {
+                  return of();
+                }
+                try {
+                  dependecyContext.setContextUnsafe(deps);
+                  const generated = element.next(input);
+                  if (isIteratorResult(generated)) {
+                    process(generated);
+                    return of();
+                  } else {
+                    return from(Promise.resolve(generated).then(process));
+                  }
+                } finally {
+                  dependecyContext.resetContextUnsafe();
+                }
+              });
+            }
+          }
+          if (isIteratorResult(generated)) {
+            process(generated);
+          } else {
+            Promise.resolve(generated).then(process);
+          }
         });
         return [observable, deps];
       } finally {

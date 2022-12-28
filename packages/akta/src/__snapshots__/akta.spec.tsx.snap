@@ -1,5 +1,38 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Akta it should render generator components 1`] = `
+<body>
+  <div
+    id="app"
+  >
+    <div>
+      <div>
+        <p>
+          State 2
+        </p>
+        <button>
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+`;
+
+exports[`Akta it should render generator components 2`] = `
+<body>
+  <div
+    id="app"
+  >
+    <div>
+      <p>
+        State 3
+      </p>
+    </div>
+  </div>
+</body>
+`;
+
 exports[`Akta should render a nested jsx blob 1`] = `
 <body>
   <div

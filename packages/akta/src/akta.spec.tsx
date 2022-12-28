@@ -3,6 +3,7 @@ import { of } from 'rxjs';
 import { mount } from './mount-ops';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import { createRenderer } from './test-utils/test-render';
+import { useNext } from './dependencies';
 
 function getCSS() {
   const lines: string[] = [];
@@ -98,5 +99,45 @@ describe('Akta', () => {
       </div>,
       container
     );
+  });
+
+  it('it should render generator components', async () => {
+    function* Component() {
+      const next = useNext();
+      yield (
+        <div>
+          <p>State 1</p>
+          <button onClick={next}>Next</button>
+        </div>
+      );
+      yield (
+        <div>
+          <p>State 2</p>
+          <button onClick={next}>Next</button>
+        </div>
+      );
+      return <p>State 3</p>;
+    }
+    const cleanup = mount(
+      <div>
+        <Component />
+      </div>,
+      container
+    );
+
+    document.body
+      .getElementsByTagName('button')
+      .item(0)
+      ?.click();
+
+    expect(document.body).toMatchSnapshot();
+
+    document.body
+      .getElementsByTagName('button')
+      .item(0)
+      ?.click();
+
+    expect(document.body).toMatchSnapshot();
+    cleanup();
   });
 });
