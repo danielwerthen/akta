@@ -64,6 +64,7 @@ export default function Index() {
         $backgroundColor="red"
         $backgroundColor_min100="blue"
         $backgroundColor_max500_min200="green"
+        $backgroundColor_hover_min400_max500="yellow"
       >
         <svg
           viewBox="0 0 50 50"
