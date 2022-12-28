@@ -58,6 +58,32 @@ export default function Index() {
           </div>
         </div>
       </div>
+      <div
+        height="100vh"
+        width="100vw"
+        $backgroundColor="red"
+        $backgroundColor_min100="blue"
+        $backgroundColor_max500_min200="green"
+      >
+        <svg
+          viewBox="0 0 50 50"
+          xmlns="http://www.w3.org/2000/svg"
+          stroke="red"
+          fill="grey"
+        >
+          <circle cx="10" cy="10" r="5"></circle>
+          <circle cx="20" cy="20" r="5"></circle>
+
+          <svg
+            viewBox="0 0 10 10"
+            x="40"
+            width="10"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle cx="5" cy="5" r="4"></circle>
+          </svg>
+        </svg>
+      </div>
     </div>
   );
 }
