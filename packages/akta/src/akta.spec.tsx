@@ -50,7 +50,24 @@ describe('Akta', () => {
   afterEach(() => {
     document.getElementById('app')?.remove();
   });
-  it('should render a nested jsx blob', async () => {
+  function rit(str: string, func: () => (() => void) | Promise<() => void>) {
+    it(str, async () => {
+      const cleanup = await func();
+      expect(document.body).toMatchSnapshot();
+      expect(getCSS()).toMatchSnapshot();
+      expect(
+        await render(document, { width: 400, height: 400 })
+      ).toMatchImageSnapshot();
+      expect(
+        await render(document, { width: 800, height: 800 })
+      ).toMatchImageSnapshot();
+      expect(
+        await render(document, { width: 1200, height: 1200 })
+      ).toMatchImageSnapshot();
+      cleanup();
+    });
+  }
+  rit('should render a nested jsx blob', async () => {
     function Component() {
       return of(<div>An observable component</div>);
     }
@@ -63,7 +80,7 @@ describe('Akta', () => {
         </div>
       );
     }
-    const cleanup = mount(
+    return mount(
       <div>
         <p
           id="daniel"
@@ -81,11 +98,5 @@ describe('Akta', () => {
       </div>,
       container
     );
-    expect(document.body).toMatchSnapshot();
-    expect(getCSS()).toMatchSnapshot();
-    expect(
-      await render(document, { width: 400, height: 400 })
-    ).toMatchImageSnapshot();
-    cleanup();
   });
 });
