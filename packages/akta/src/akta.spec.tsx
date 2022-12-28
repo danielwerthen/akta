@@ -58,13 +58,26 @@ describe('Akta', () => {
       expect(getCSS()).toMatchSnapshot();
       expect(
         await render(document, { width: 400, height: 400 })
-      ).toMatchImageSnapshot({ dumpDiffToConsole: true });
+      ).toMatchImageSnapshot({
+        dumpDiffToConsole: true,
+        customDiffConfig: {
+          threshold: 0.2,
+        },
+      });
       expect(
         await render(document, { width: 800, height: 800 })
-      ).toMatchImageSnapshot();
+      ).toMatchImageSnapshot({
+        customDiffConfig: {
+          threshold: 0.2,
+        },
+      });
       expect(
         await render(document, { width: 1200, height: 1200 })
-      ).toMatchImageSnapshot();
+      ).toMatchImageSnapshot({
+        customDiffConfig: {
+          threshold: 0.2,
+        },
+      });
       cleanup();
     });
   }
