@@ -61,21 +61,21 @@ describe('Akta', () => {
       ).toMatchImageSnapshot({
         dumpDiffToConsole: true,
         customDiffConfig: {
-          threshold: 0.2,
+          threshold: 0.3,
         },
       });
       expect(
         await render(document, { width: 800, height: 800 })
       ).toMatchImageSnapshot({
         customDiffConfig: {
-          threshold: 0.2,
+          threshold: 0.3,
         },
       });
       expect(
         await render(document, { width: 1200, height: 1200 })
       ).toMatchImageSnapshot({
         customDiffConfig: {
-          threshold: 0.2,
+          threshold: 0.3,
         },
       });
       cleanup();
