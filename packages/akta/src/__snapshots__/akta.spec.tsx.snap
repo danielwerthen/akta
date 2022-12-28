@@ -33,7 +33,7 @@ exports[`Akta it should render generator components 2`] = `
 </body>
 `;
 
-exports[`Akta should render a nested jsx blob 1`] = `
+exports[`Akta should handle css props with media queries properly 1`] = `
 <body>
   <div
     id="app"
@@ -49,7 +49,7 @@ exports[`Akta should render a nested jsx blob 1`] = `
 </body>
 `;
 
-exports[`Akta should render a nested jsx blob 2`] = `
+exports[`Akta should handle css props with media queries properly 2`] = `
 ".c0 {background-color: red;}
 (min-width: 100px)
 .c1 {background-color: blue;}

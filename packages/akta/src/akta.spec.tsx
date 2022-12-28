@@ -78,7 +78,7 @@ describe('Akta', () => {
       cleanup();
     });
   }
-  rit('should render a nested jsx blob', async () => {
+  rit('should handle css props with media queries properly', async () => {
     return mount(
       <div>
         <p
