@@ -1,5 +1,4 @@
 /** @jsxImportSource . */
-import { of } from 'rxjs';
 import { mount } from './mount-ops';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import { createRenderer } from './test-utils/test-render';
@@ -57,58 +56,39 @@ describe('Akta', () => {
       expect(document.body).toMatchSnapshot();
       expect(getCSS()).toMatchSnapshot();
       expect(
-        await render(document, { width: 400, height: 400 })
+        await render(document, {
+          width: 50,
+          height: 50,
+        })
       ).toMatchImageSnapshot({
         dumpDiffToConsole: true,
-        customDiffConfig: {
-          threshold: 0.3,
-        },
       });
       expect(
-        await render(document, { width: 800, height: 800 })
-      ).toMatchImageSnapshot({
-        customDiffConfig: {
-          threshold: 0.3,
-        },
-      });
+        await render(document, {
+          width: 150,
+          height: 150,
+        })
+      ).toMatchImageSnapshot();
       expect(
-        await render(document, { width: 1200, height: 1200 })
-      ).toMatchImageSnapshot({
-        customDiffConfig: {
-          threshold: 0.3,
-        },
-      });
+        await render(document, {
+          width: 250,
+          height: 250,
+        })
+      ).toMatchImageSnapshot();
       cleanup();
     });
   }
   rit('should render a nested jsx blob', async () => {
-    function Component() {
-      return of(<div>An observable component</div>);
-    }
-    function NestedComponent() {
-      return (
-        <div>
-          <div $color="black">{of('Leaf 1')}</div>
-          <div $color="white">{of('Leaf 2')}</div>
-          <div $color="red">{of('Leaf 3')}</div>
-        </div>
-      );
-    }
     return mount(
-      <div $fontFamily="arial">
+      <div>
         <p
           id="daniel"
-          $color="red"
-          $color_min100="blue"
-          $color_max500_min200="green"
-          background="gray"
-        >
-          This is a paragraph
-        </p>
-        {of(<div>An observable element</div>)}
-        <button>This is button</button>
-        <Component />
-        <NestedComponent />
+          height="100vh"
+          width="100vw"
+          $backgroundColor="red"
+          $backgroundColor_min100="blue"
+          $backgroundColor_max500_min200="green"
+        ></p>
       </div>,
       container
     );
