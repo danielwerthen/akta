@@ -58,7 +58,7 @@ describe('Akta', () => {
       expect(getCSS()).toMatchSnapshot();
       expect(
         await render(document, { width: 400, height: 400 })
-      ).toMatchImageSnapshot();
+      ).toMatchImageSnapshot({ dumpDiffToConsole: true });
       expect(
         await render(document, { width: 800, height: 800 })
       ).toMatchImageSnapshot();
