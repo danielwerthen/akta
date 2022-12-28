@@ -44,6 +44,9 @@
     "testEnvironment": "jsdom",
     "watchPathIgnorePatterns": [
       "dist"
+    ],
+    "transformIgnorePatterns": [
+      "/node_modules/(?!rxjs)"
     ]
   }
 }
