@@ -82,7 +82,7 @@ describe('Akta', () => {
       );
     }
     return mount(
-      <div>
+      <div $fontFamily="arial">
         <p
           id="daniel"
           $color="red"
