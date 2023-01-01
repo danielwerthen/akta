@@ -108,7 +108,7 @@ export function parseProp(prop: string): ParsedAttribute {
 
 let ruleCount = 0;
 const map = stylesheetMap();
-export function standardCSSMethod<T extends HTMLElement>(
+export function standardCSSMethod<T extends Element>(
   key: string
 ): AttributeMethod<T> {
   const { attributeName, specificity, media, pseudo } = parseProp(key);

@@ -281,6 +281,11 @@ type QueueItem = [
   string | undefined
 ];
 
+const defaultNS: { [key: string]: string } = {
+  math: 'http://www.w3.org/1998/Math/MathML',
+  svg: 'http://www.w3.org/2000/svg',
+};
+
 export function observeNode(
   _node: AktaNode,
   _deps: DependencyMap,
@@ -325,11 +330,11 @@ export function observeNode(
     } else if (isAktaElement(node)) {
       const { type, props } = node;
       const ns =
-        type === 'svg'
-          ? 'http://www.w3.org/2000/svg'
-          : typeof props['xmlns'] === 'string'
+        (typeof props['xmlns'] === 'string'
           ? props['xmlns']
-          : namespace;
+          : typeof type === 'string'
+          ? defaultNS[type]
+          : null) || namespace;
       if (typeof type === 'string') {
         const element = ns
           ? document.createElementNS(ns, type)
@@ -350,7 +355,10 @@ export function observeNode(
               ns,
             ]);
           } else {
-            const observable = elements[type][key](element, props[key]);
+            const observable = elements[ns ?? ''][type][key](
+              element,
+              props[key]
+            );
             if (observable) {
               observer.observables.push(observable);
             }

@@ -159,10 +159,34 @@ export class BaseAttributes<T extends Element = Element> extends MetaObject<
   }
 }
 
-export class AllElements extends MetaObject<BaseAttributes<Element>> {
-  _base = new BaseAttributes();
+export class BaseHTMLAttributes extends BaseAttributes<HTMLElement> {}
+
+export class BaseSVGAttributes extends BaseAttributes<SVGElement> {}
+
+export class AllElements<T extends BaseAttributes<Element>> extends MetaObject<
+  T
+> {
+  _base: T;
+  constructor(base: T) {
+    super();
+    this._base = base;
+  }
   [MethodMissing](_key: string) {
     const base = this._base;
     return base;
+  }
+}
+
+export class AllNamespaces extends MetaObject<
+  AllElements<BaseAttributes<Element>>
+> {
+  _html = new AllElements(new BaseHTMLAttributes());
+  _svg = new AllElements(new BaseSVGAttributes());
+
+  [MethodMissing](_key: string) {
+    if (_key === 'http://www.w3.org/2000/svg') {
+      return this._svg;
+    }
+    return this._html;
   }
 }

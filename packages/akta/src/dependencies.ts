@@ -6,7 +6,7 @@ import {
   switchMap,
 } from 'rxjs';
 import { createDependency, DependencyMap, Dependency } from './dependency-map';
-import { AllElements, isEvent } from './element-ops';
+import { AllNamespaces, isEvent } from './element-ops';
 import { lazy } from './lazy-function';
 import MetaObject, { MethodMissing } from './meta-object';
 import { createSyncContext } from './sync-context';
@@ -20,7 +20,7 @@ export const teardownDependency = createDependency<null | TeardownFunction[]>(
   null
 );
 
-export const elementsDependency = createDependency(new AllElements());
+export const elementsDependency = createDependency(new AllNamespaces());
 
 export function useNext<T extends AktaNode, RETURN extends AktaNode, NEXT>(
   _input?: () => Generator<T, RETURN, NEXT> | AsyncGenerator<T, RETURN, NEXT>
