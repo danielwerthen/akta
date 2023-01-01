@@ -3,6 +3,12 @@ import { mount } from './mount-ops';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import { createRenderer } from './test-utils/test-render';
 import { useNext } from './dependencies';
+import {
+  BaseAttributes,
+  BaseHTMLAttributes,
+  BaseSVGAttributes,
+  HTMLElements,
+} from './element-ops';
 
 function getCSS() {
   const lines: string[] = [];
@@ -148,5 +154,57 @@ describe('Akta', () => {
 
     expect(document.body).toMatchSnapshot();
     cleanup();
+  });
+  rit('should handle custom attributes', () => {
+    BaseHTMLAttributes.prototype.xCustom = (element, val) => {
+      element.dataset['x_custom'] = 'html-' + val;
+    };
+    BaseAttributes.prototype.xCustom = (element, val) => {
+      element.dataset['x_custom'] = 'base-' + val;
+    };
+    BaseAttributes.prototype.baseCustom = (element, val) => {
+      element.dataset['base_custom'] = 'base-' + val;
+    };
+    BaseHTMLAttributes.prototype.htmlCustom = (element, val) => {
+      element.dataset['html_custom'] = 'html-' + val;
+    };
+    BaseSVGAttributes.prototype.svgCustom = (element, val) => {
+      element.dataset['svg_custom'] = 'svg-' + val;
+    };
+
+    HTMLElements.p.pCustom = (element, val) => {
+      element.dataset['p_custom'] = 'p-' + val;
+    };
+    return mount(
+      <div pCustom="div">
+        <p
+          xCustom="custom-value"
+          baseCustom="html"
+          htmlCustom="html"
+          svgCustom="html"
+          pCustom="p"
+        >
+          Text
+        </p>
+        <svg
+          viewBox="0 0 50 50"
+          xmlns="http://www.w3.org/2000/svg"
+          stroke="red"
+          fill="grey"
+        >
+          <circle
+            xCustom="custom-value"
+            cx="10"
+            cy="10"
+            r="5"
+            baseCustom="svg"
+            htmlCustom="svg"
+            svgCustom="svg"
+            pCustom="circle"
+          ></circle>
+        </svg>
+      </div>,
+      container
+    );
   });
 });

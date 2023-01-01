@@ -163,30 +163,73 @@ export class BaseHTMLAttributes extends BaseAttributes<HTMLElement> {}
 
 export class BaseSVGAttributes extends BaseAttributes<SVGElement> {}
 
-export class AllElements<T extends BaseAttributes<Element>> extends MetaObject<
-  T
-> {
-  _base: T;
-  constructor(base: T) {
-    super();
-    this._base = base;
-  }
-  [MethodMissing](_key: string) {
-    const base = this._base;
-    return base;
-  }
-}
+const htmlElements: { [key: string]: BaseHTMLAttributes } = {
+  default: new BaseHTMLAttributes(),
+};
 
-export class AllNamespaces extends MetaObject<
-  AllElements<BaseAttributes<Element>>
+class HTMLElementPrototypes extends MetaObject<
+  typeof BaseHTMLAttributes.prototype
 > {
-  _html = new AllElements(new BaseHTMLAttributes());
-  _svg = new AllElements(new BaseSVGAttributes());
-
-  [MethodMissing](_key: string) {
-    if (_key === 'http://www.w3.org/2000/svg') {
-      return this._svg;
+  [MethodMissing](key: string) {
+    function createBaseType() {
+      class BaseType extends BaseHTMLAttributes {}
+      Object.defineProperty(BaseType, 'name', {
+        value: `Base${key.toUpperCase()}Attributes`,
+        writable: false,
+      });
+      return new BaseType();
     }
-    return this._html;
+    return Reflect.getPrototypeOf(
+      htmlElements[key] || (htmlElements[key] = createBaseType())
+    ) as typeof BaseHTMLAttributes.prototype;
   }
 }
+
+const svgElements: { [key: string]: BaseSVGAttributes } = {
+  default: new BaseSVGAttributes(),
+};
+
+class SVGElementPrototypes extends MetaObject<
+  typeof BaseSVGAttributes.prototype
+> {
+  [MethodMissing](key: string) {
+    function createBaseType() {
+      class BaseType extends BaseSVGAttributes {}
+      Object.defineProperty(BaseType, 'name', {
+        value: `Base${key.toUpperCase()}Attributes`,
+        writable: false,
+      });
+      return new BaseType();
+    }
+    return Reflect.getPrototypeOf(
+      svgElements[key] || (svgElements[key] = createBaseType())
+    ) as typeof BaseSVGAttributes.prototype;
+  }
+}
+
+export const HTMLElements = new HTMLElementPrototypes();
+export const SVGElements = new SVGElementPrototypes();
+
+export class AllNamespaces extends MetaObject<{
+  [key: string]: BaseAttributes<Element>;
+}> {
+  constructor() {
+    super();
+    this[''] = htmlElements;
+    this['http://www.w3.org/2000/svg'] = svgElements;
+  }
+
+  [MethodMissing](_key: string) {
+    const attributes = new BaseAttributes();
+    return new Proxy(
+      {},
+      {
+        get: (_target, _type: string) => {
+          return attributes;
+        },
+      }
+    );
+  }
+}
+
+export const Namespaces = new AllNamespaces();

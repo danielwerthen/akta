@@ -355,7 +355,8 @@ export function observeNode(
               ns,
             ]);
           } else {
-            const observable = elements[ns ?? ''][type][key](
+            const space = elements[ns ?? ''];
+            const observable = (space[type] ?? space['default'])[key](
               element,
               props[key]
             );

@@ -81,3 +81,49 @@ exports[`Akta should handle css props with media queries properly 2`] = `
 (max-width: 500px) and (min-width: 200px)
 .c2 {background-color: green;}"
 `;
+
+exports[`Akta should handle custom attributes 1`] = `
+<body>
+  <div
+    id="app"
+  >
+    <div
+      pcustom="div"
+    >
+      <p
+        data-base_custom="base-html"
+        data-html_custom="html-html"
+        data-p_custom="p-p"
+        data-x_custom="html-custom-value"
+        svgcustom="html"
+      >
+        Text
+      </p>
+      <svg
+        style="stroke: red; fill: grey;"
+        viewBox="0 0 50 50"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          cx="10"
+          cy="10"
+          data-base_custom="base-svg"
+          data-svg_custom="svg-svg"
+          data-x_custom="base-custom-value"
+          htmlCustom="svg"
+          pCustom="circle"
+          r="5"
+        />
+      </svg>
+    </div>
+  </div>
+</body>
+`;
+
+exports[`Akta should handle custom attributes 2`] = `
+".c0 {background-color: red;}
+(min-width: 100px)
+.c1 {background-color: blue;}
+(max-width: 500px) and (min-width: 200px)
+.c2 {background-color: green;}"
+`;
