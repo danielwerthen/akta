@@ -155,7 +155,7 @@ describe('Akta', () => {
     expect(document.body).toMatchSnapshot();
     cleanup();
   });
-  rit('should handle custom attributes', () => {
+  it('should handle custom attributes', () => {
     BaseHTMLAttributes.prototype.xCustom = (element, val) => {
       element.dataset['x_custom'] = 'html-' + val;
     };
@@ -175,7 +175,7 @@ describe('Akta', () => {
     HTMLElements.p.pCustom = (element, val) => {
       element.dataset['p_custom'] = 'p-' + val;
     };
-    return mount(
+    const cleanup = mount(
       <div pCustom="div">
         <p
           xCustom="custom-value"
@@ -206,5 +206,7 @@ describe('Akta', () => {
       </div>,
       container
     );
+    expect(document.body).toMatchSnapshot();
+    cleanup();
   });
 });

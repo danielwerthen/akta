@@ -119,11 +119,3 @@ exports[`Akta should handle custom attributes 1`] = `
   </div>
 </body>
 `;
-
-exports[`Akta should handle custom attributes 2`] = `
-".c0 {background-color: red;}
-(min-width: 100px)
-.c1 {background-color: blue;}
-(max-width: 500px) and (min-width: 200px)
-.c2 {background-color: green;}"
-`;
