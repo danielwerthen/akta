@@ -12,7 +12,7 @@ import MetaObject, { MethodMissing } from './meta-object';
 import { createSyncContext } from './sync-context';
 import { AktaNode, ElementProperties } from './types';
 
-export const dependecyContext = createSyncContext<DependencyMap>();
+export const dependencyContext = createSyncContext<DependencyMap>();
 
 export const continuationDependency = createDependency(lazy());
 export type TeardownFunction = () => void;
@@ -25,7 +25,7 @@ export const elementsDependency = createDependency(new AllNamespaces());
 export function useNext<T extends AktaNode, RETURN extends AktaNode, NEXT>(
   _input?: () => Generator<T, RETURN, NEXT> | AsyncGenerator<T, RETURN, NEXT>
 ): (input: NEXT) => Promise<void> {
-  const ctx = dependecyContext.getContext();
+  const ctx = dependencyContext.getContext();
   return (input: NEXT) => {
     return firstValueFrom(
       ctx.observe(continuationDependency).pipe(switchMap(next => next(input)))
@@ -34,7 +34,7 @@ export function useNext<T extends AktaNode, RETURN extends AktaNode, NEXT>(
 }
 
 export function useTeardown(fn: TeardownFunction) {
-  const ctx = dependecyContext.getContext();
+  const ctx = dependencyContext.getContext();
   ctx.provide(teardownDependency, fns => {
     if (!fns) {
       return [fn];
@@ -48,17 +48,17 @@ export function useProvideDependency<T>(
   dep: Dependency<T>,
   value: T | ((old?: T) => T)
 ) {
-  const ctx = dependecyContext.getContext();
+  const ctx = dependencyContext.getContext();
   ctx.provide(dep, value);
 }
 
 export function useDependency<T>(dep: Dependency<T>): Observable<T> {
-  const ctx = dependecyContext.getContext();
+  const ctx = dependencyContext.getContext();
   return ctx.observe(dep);
 }
 
 export function useContext(): DependencyMap {
-  return dependecyContext.getContext();
+  return dependencyContext.getContext();
 }
 
 export class PropertiesBase extends MetaObject<

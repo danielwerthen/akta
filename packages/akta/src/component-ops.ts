@@ -1,7 +1,7 @@
 import { from, isObservable, Observable, of } from 'rxjs';
 import {
   continuationDependency,
-  dependecyContext,
+  dependencyContext,
   teardownDependency,
 } from './dependencies';
 import { DependencyMap } from './dependency-map';
@@ -35,7 +35,7 @@ export function callComponent<PROPS>(
   const deps = parentDeps.branch();
   deps.provide(teardownDependency, []);
   try {
-    dependecyContext.setContextUnsafe(deps);
+    dependencyContext.setContextUnsafe(deps);
     const element = runComponent(props);
     if (!element) {
       return [null, deps];
@@ -47,7 +47,7 @@ export function callComponent<PROPS>(
       const continuation = lazy();
       deps.provide(continuationDependency, () => continuation);
       try {
-        dependecyContext.setContextUnsafe(deps);
+        dependencyContext.setContextUnsafe(deps);
         const generated = element.next();
         const observable = new Observable<AktaNode>(subscriber => {
           let isDefined = false;
@@ -67,7 +67,7 @@ export function callComponent<PROPS>(
                   return of();
                 }
                 try {
-                  dependecyContext.setContextUnsafe(deps);
+                  dependencyContext.setContextUnsafe(deps);
                   const generated = element.next(input);
                   if (isIteratorResult(generated)) {
                     process(generated);
@@ -76,7 +76,7 @@ export function callComponent<PROPS>(
                     return from(Promise.resolve(generated).then(process));
                   }
                 } finally {
-                  dependecyContext.resetContextUnsafe();
+                  dependencyContext.resetContextUnsafe();
                 }
               });
             }
@@ -89,11 +89,11 @@ export function callComponent<PROPS>(
         });
         return [observable, deps];
       } finally {
-        dependecyContext.resetContextUnsafe();
+        dependencyContext.resetContextUnsafe();
       }
     }
     return [element, deps];
   } finally {
-    dependecyContext.resetContextUnsafe();
+    dependencyContext.resetContextUnsafe();
   }
 }

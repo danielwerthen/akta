@@ -13,7 +13,7 @@ import {
   elementsDependency,
   teardownDependency,
   useTeardown,
-  dependecyContext,
+  dependencyContext,
 } from './dependencies';
 import { DependencyMap } from './dependency-map';
 import { callComponent } from './component-ops';
@@ -404,7 +404,7 @@ export function observeNode(
 }
 
 export function usePrepare(element: AktaNode): Promise<AktaNode> {
-  const dependencies = dependecyContext.getContext();
+  const dependencies = dependencyContext.getContext();
 
   const attacher = new LazyAttacher();
   const observer = new NodeObserver();
@@ -423,7 +423,7 @@ export function usePrepare(element: AktaNode): Promise<AktaNode> {
 export function usePreparer(): (
   element: AktaNode
 ) => [AktaNode, Observable<void>, Subscription] {
-  const dependencies = dependecyContext.getContext();
+  const dependencies = dependencyContext.getContext();
   const subscriptions: Subscription[] = [];
   useTeardown(() => {
     subscriptions.forEach(sub => sub.unsubscribe());

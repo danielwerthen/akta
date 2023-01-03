@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { dependecyContext } from './dependencies';
+import { dependencyContext } from './dependencies';
 import { DependencyMap } from './dependency-map';
 import { mount } from './';
 import { jsx } from './jsx-runtime';
@@ -12,7 +12,7 @@ describe('ObserveAsync', () => {
     }
     const value = new Subject();
 
-    dependecyContext.setContext(
+    dependencyContext.setContext(
       () => mount(jsx('div', { children: value }), root),
       new DependencyMap()
     );
